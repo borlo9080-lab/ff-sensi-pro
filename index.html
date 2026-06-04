@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FF Sensi Pro">
+<meta name="theme-color" content="#0f1429">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-icon-180.png">
+<link rel="apple-touch-icon" sizes="152x152" href="icons/apple-icon-152.png">
+<link rel="apple-touch-icon" sizes="120x120" href="icons/apple-icon-120.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+<title>FF Sensi Pro</title>
+<style>
+  :root {
+    --bg: #0f1429;
+    --card: #1a2040;
+    --card2: #222a50;
+    --accent: #4a7dff;
+    --accent2: #7c4dff;
+    --text: #e8ecf4;
+    --text2: #8892b0;
+    --green: #34c759;
+    --red: #ff3b30;
+    --radius: 14px;
+    --radius-sm: 10px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 0 0 40px 0;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+  .container { max-width: 500px; margin: 0 auto; padding: 0 16px; }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, #141b3a, #1a2040);
+    padding: 28px 20px 20px;
+    text-align: center;
+    border-bottom: 1px solid rgba(74,125,255,0.15);
+    margin-bottom: 16px;
+  }
+  .header h1 { font-size: 26px; font-weight: 700; color: var(--accent); letter-spacing: -0.5px; }
+  .header p { font-size: 13px; color: var(--text2); margin-top: 4px; }
+
+  /* Card */
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 18px 16px;
+    margin-bottom: 12px;
+    border: 1px solid rgba(74,125,255,0.08);
+  }
+  .card-title {
+    font-size: 14px; font-weight: 600; color: var(--text2);
+    margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+
+  /* Form */
+  .field { margin-bottom: 14px; }
+  .field:last-child { margin-bottom: 0; }
+  .field label {
+    display: block; font-size: 13px; font-weight: 500;
+    color: var(--text2); margin-bottom: 5px;
+  }
+  .field select, .field input {
+    width: 100%; padding: 12px 14px;
+    background: var(--card2); color: var(--text);
+    border: 1px solid rgba(74,125,255,0.12);
+    border-radius: var(--radius-sm);
+    font-size: 15px; font-weight: 500;
+    appearance: none; -webkit-appearance: none;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .field select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238892b0' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 12px center;
+    padding-right: 36px;
+  }
+  .field select:focus, .field input:focus { border-color: var(--accent); }
+  .field select:disabled { opacity: 0.4; }
+
+  /* Buttons */
+  .btn {
+    width: 100%; padding: 15px;
+    border: none; border-radius: var(--radius-sm);
+    font-size: 16px; font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s, opacity 0.15s;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), #3a5fd9);
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(74,125,255,0.3);
+  }
+  .btn-secondary {
+    background: var(--card2); color: var(--text);
+    border: 1px solid rgba(74,125,255,0.12);
+  }
+  .btn-danger {
+    background: rgba(255,59,48,0.15); color: var(--red);
+    border: 1px solid rgba(255,59,48,0.2);
+  }
+  .btn-row { display: flex; gap: 8px; margin-top: 12px; }
+  .btn-row .btn { flex: 1; padding: 12px; font-size: 14px; }
+
+  /* Results */
+  .sens-item {
+    display: flex; align-items: center;
+    padding: 5px 0; gap: 8px;
+  }
+  .sens-label { font-size: 13px; width: 72px; flex-shrink: 0; }
+  .sens-bar-wrap {
+    flex: 1; height: 12px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 6px; overflow: hidden;
+  }
+  .sens-bar {
+    height: 100%; border-radius: 6px;
+    background: linear-gradient(90deg, var(--accent), #6b9dff);
+    transition: width 0.5s ease;
+    width: 0%;
+  }
+  .sens-bar.dpi { background: linear-gradient(90deg, #5a8dff, #8ab4ff); }
+  .sens-bar.emu { background: linear-gradient(90deg, var(--accent2), #9b6dff); }
+  .sens-value { font-size: 13px; font-weight: 700; width: 30px; text-align: right; flex-shrink: 0; }
+
+  /* Section separators */
+  .section-divider {
+    height: 1px; background: rgba(74,125,255,0.08);
+    margin: 12px 0;
+  }
+
+  /* HUD */
+  .hud-text { font-size: 13px; line-height: 1.6; color: var(--text); white-space: pre-line; }
+
+  /* History */
+  .hist-item {
+    padding: 10px 12px;
+    background: var(--card2);
+    border-radius: var(--radius-sm);
+    margin-bottom: 6px;
+  }
+  .hist-item:last-child { margin-bottom: 0; }
+  .hist-date { font-size: 11px; color: var(--text2); font-weight: 600; }
+  .hist-summary { font-size: 12px; color: var(--text2); margin-top: 2px; }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: var(--card2); color: var(--text);
+    padding: 12px 24px; border-radius: 12px;
+    font-size: 14px; font-weight: 500;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    border: 1px solid rgba(74,125,255,0.15);
+    opacity: 0; transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none; z-index: 999;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* empty state */
+  .empty { text-align: center; color: var(--text2); font-size: 13px; padding: 20px 0; }
+
+  /* Hidden */
+  .hidden { display: none !important; }
+
+  /* Responsive touch */
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f0f2f8;
+      --card: #ffffff;
+      --card2: #f4f6fc;
+      --text: #1a1e30;
+      --text2: #6b7280;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>FF Sensi Pro</h1>
+  <p>Gerador de Sensibilidade &bull; Free Fire</p>
+</div>
+
+<div class="container">
+
+  <!-- Inputs -->
+  <div class="card">
+    <div class="card-title">Configura&ccedil;&otilde;es</div>
+    <div class="field">
+      <label for="device">Dispositivo</label>
+      <select id="device">
+        <option value="Android">Android</option>
+        <option value="iPhone">iPhone</option>
+        <option value="Emulador">Emulador</option>
+      </select>
+    </div>
+    <div class="field" id="brand-field">
+      <label for="brand">Marca</label>
+      <select id="brand">
+        <option value="Todas as Marcas">Todas as Marcas</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="model">Modelo</label>
+      <select id="model"></select>
+    </div>
+    <div class="field">
+      <label for="fps">FPS</label>
+      <select id="fps">
+        <option value="30">30</option>
+        <option value="60" selected>60</option>
+        <option value="90">90</option>
+        <option value="120">120</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="fingers">Dedos</label>
+      <select id="fingers">
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4" selected>4</option>
+        <option value="5">5</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="style">Estilo de Jogo</label>
+      <select id="style">
+        <option value="Capa">Capa</option>
+        <option value="Rush">Rush</option>
+        <option value="Suporte">Suporte</option>
+        <option value="Misto" selected>Misto</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" id="generateBtn" onclick="gerar()">Gerar Sensibilidade</button>
+  </div>
+
+  <!-- Results -->
+  <div class="card hidden" id="resultsCard">
+    <div class="card-title">Sensibilidades Geradas</div>
+    <div id="sensList"></div>
+
+    <div class="section-divider"></div>
+
+    <div class="card-title" style="margin-bottom:6px">HUD Recomendado</div>
+    <div class="hud-text" id="hudText"></div>
+
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="copiar()">Copiar</button>
+      <button class="btn btn-secondary" onclick="exportar()">Exportar</button>
+      <button class="btn btn-danger" onclick="limpar()">Limpar</button>
+    </div>
+  </div>
+
+  <!-- History -->
+  <div class="card">
+    <div class="card-title">Hist&oacute;rico</div>
+    <div id="historyList"><div class="empty">Nenhum hist&oacute;rico ainda.</div></div>
+  </div>
+
+  <div style="text-align:center;padding:16px 0 32px;color:var(--text2);font-size:11px;line-height:1.5">
+    Sensibilidades meramente recomendativas.<br>
+    Sem v&iacute;nculo oficial com Free Fire ou Garena.
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── Data ──────────────────────────────────────────────────────────
+const ANDROID_MODELS = [
+  "Samsung Galaxy S25 Ultra","Samsung Galaxy S25+","Samsung Galaxy S25",
+  "Samsung Galaxy S24 Ultra","Samsung Galaxy S24+","Samsung Galaxy S24",
+  "Samsung Galaxy S23 Ultra","Samsung Galaxy S23+","Samsung Galaxy S23","Samsung Galaxy S23 FE",
+  "Samsung Galaxy S22 Ultra","Samsung Galaxy S22+","Samsung Galaxy S22","Samsung Galaxy S22 FE",
+  "Samsung Galaxy S21 Ultra","Samsung Galaxy S21+","Samsung Galaxy S21","Samsung Galaxy S21 FE",
+  "Samsung Galaxy S20 Ultra","Samsung Galaxy S20+","Samsung Galaxy S20","Samsung Galaxy S20 FE",
+  "Samsung Galaxy S10+","Samsung Galaxy S10","Samsung Galaxy S10e","Samsung Galaxy S10 Lite",
+  "Samsung Galaxy S9+","Samsung Galaxy S9","Samsung Galaxy S8+","Samsung Galaxy S8",
+  "Samsung Galaxy Note 20 Ultra","Samsung Galaxy Note 20",
+  "Samsung Galaxy Note 10+","Samsung Galaxy Note 10","Samsung Galaxy Note 10 Lite",
+  "Samsung Galaxy Note 9","Samsung Galaxy Note 8",
+  "Samsung Galaxy Z Fold 6","Samsung Galaxy Z Fold 5","Samsung Galaxy Z Fold 4","Samsung Galaxy Z Fold 3",
+  "Samsung Galaxy Z Fold 2","Samsung Galaxy Fold",
+  "Samsung Galaxy Z Flip 6","Samsung Galaxy Z Flip 5","Samsung Galaxy Z Flip 4","Samsung Galaxy Z Flip 3",
+  "Samsung Galaxy Z Flip","Samsung Galaxy A55 5G","Samsung Galaxy A54 5G","Samsung Galaxy A53 5G",
+  "Samsung Galaxy A73 5G","Samsung Galaxy A72","Samsung Galaxy A71","Samsung Galaxy A70",
+  "Samsung Galaxy A35 5G","Samsung Galaxy A34 5G","Samsung Galaxy A33 5G",
+  "Samsung Galaxy A25 5G","Samsung Galaxy A24 4G","Samsung Galaxy A15 5G","Samsung Galaxy A14 5G",
+  "Samsung Galaxy A13","Samsung Galaxy A12","Samsung Galaxy A11","Samsung Galaxy A10",
+  "Samsung Galaxy A05","Samsung Galaxy A04","Samsung Galaxy A03","Samsung Galaxy A02",
+  "Samsung Galaxy M55","Samsung Galaxy M54","Samsung Galaxy M53","Samsung Galaxy M52",
+  "Samsung Galaxy M34","Samsung Galaxy M33","Samsung Galaxy M32",
+  "Samsung Galaxy M23","Samsung Galaxy M21","Samsung Galaxy M15","Samsung Galaxy M13","Samsung Galaxy M12",
+  "Samsung Galaxy M05","Samsung Galaxy M04",
+  "Samsung Galaxy F54","Samsung Galaxy F34","Samsung Galaxy F23","Samsung Galaxy F22",
+  "Samsung Galaxy F15","Samsung Galaxy F14","Samsung Galaxy F13","Samsung Galaxy F12","Samsung Galaxy F04",
+  "Samsung Galaxy J8","Samsung Galaxy J7","Samsung Galaxy J6","Samsung Galaxy J5","Samsung Galaxy J4","Samsung Galaxy J3",
+  "Samsung Galaxy Tab S9 Ultra","Samsung Galaxy Tab S9+","Samsung Galaxy Tab S9",
+  "Samsung Galaxy Tab S8 Ultra","Samsung Galaxy Tab S8+","Samsung Galaxy Tab S8",
+  "Samsung Galaxy Tab S7+","Samsung Galaxy Tab S7","Samsung Galaxy Tab S6 Lite",
+  "Samsung Galaxy Tab A9+","Samsung Galaxy Tab A9","Samsung Galaxy Tab A8","Samsung Galaxy Tab A7 Lite",
+  "Xiaomi 14 Ultra","Xiaomi 14 Pro","Xiaomi 14",
+  "Xiaomi 13 Ultra","Xiaomi 13 Pro","Xiaomi 13","Xiaomi 13 Lite",
+  "Xiaomi 12 Pro","Xiaomi 12","Xiaomi 12X","Xiaomi 12 Lite",
+  "Xiaomi 11T Pro","Xiaomi 11T","Xiaomi 11 Lite 5G NE",
+  "Xiaomi Mix Fold 3","Xiaomi Mix Fold 2",
+  "Redmi Note 13 Pro+ 5G","Redmi Note 13 Pro 5G","Redmi Note 13 5G","Redmi Note 13 4G",
+  "Redmi Note 12 Pro+ 5G","Redmi Note 12 Pro 5G","Redmi Note 12 5G","Redmi Note 12 4G",
+  "Redmi Note 12 Turbo","Redmi Note 11 Pro+ 5G","Redmi Note 11 Pro 5G","Redmi Note 11 5G","Redmi Note 11",
+  "Redmi Note 11S","Redmi Note 11 Pro 4G",
+  "Redmi Note 10 Pro","Redmi Note 10 Pro Max","Redmi Note 10S","Redmi Note 10 5G","Redmi Note 10 Lite","Redmi Note 10",
+  "Redmi Note 9 Pro","Redmi Note 9S","Redmi Note 9T","Redmi Note 9",
+  "Redmi Note 8 Pro","Redmi Note 8","Redmi Note 8T",
+  "Redmi Note 7 Pro","Redmi Note 7","Redmi Note 6 Pro",
+  "Redmi Note 5 Pro","Redmi Note 5","Redmi Note 4",
+  "Redmi 14C","Redmi 13C","Redmi 13 5G","Redmi 13",
+  "Redmi 12C","Redmi 12 5G","Redmi 12",
+  "Redmi 11 Prime","Redmi 11 5G",
+  "Redmi 10C","Redmi 10 5G","Redmi 10 2022","Redmi 10",
+  "Redmi 9","Redmi 9 Prime","Redmi 9A","Redmi 9C","Redmi 9i",
+  "Redmi 8A","Redmi 8","Redmi 7","Redmi 6A","Redmi 6","Redmi 5","Redmi 5A",
+  "Redmi K70 Pro","Redmi K70","Redmi K70E",
+  "Redmi K60 Pro","Redmi K60","Redmi K60E",
+  "Redmi K50 Pro","Redmi K50","Redmi K50G",
+  "Redmi K40 Pro","Redmi K40","Redmi K40 Gaming",
+  "Redmi K30 Pro","Redmi K30 5G","Redmi K30","Redmi K20 Pro","Redmi K20",
+  "Redmi Turbo 3","Redmi Note 12 Turbo",
+  "Poco X7 Pro","Poco X7","Poco X6 Pro","Poco X6","Poco X5 Pro","Poco X5",
+  "Poco X4 Pro 5G","Poco X4 GT","Poco X4","Poco X3 Pro","Poco X3 NFC","Poco X3 GT","Poco X2",
+
+  "Poco F7 Pro","Poco F7","Poco F6 Pro","Poco F6",
+  "Poco F5 Pro","Poco F5","Poco F4","Poco F4 GT","Poco F3","Poco F3 GT",
+  "Poco F2 Pro","Poco F1",
+
+  "Poco M6 Pro","Poco M6","Poco M5","Poco M5s",
+  "Poco M4 Pro","Poco M4","Poco M3 Pro","Poco M3",
+  "Poco M2 Pro","Poco M2",
+
+  "Poco C75","Poco C65","Poco C61","Poco C55","Poco C51","Poco C40","Poco C31",
+
+  "Poco Pad",
+  "Motorola Edge 50 Ultra","Motorola Edge 50 Pro","Motorola Edge 50 Fusion","Motorola Edge 50",
+  "Motorola Edge 40 Ultra","Motorola Edge 40 Pro","Motorola Edge 40 Neo","Motorola Edge 40",
+  "Motorola Edge 30 Ultra","Motorola Edge 30 Pro","Motorola Edge 30 Neo","Motorola Edge 30",
+  "Motorola Edge 20 Pro","Motorola Edge 20",
+  "Motorola Moto G85","Motorola Moto G75","Motorola Moto G55","Motorola Moto G45",
+  "Motorola Moto G35","Motorola Moto G25","Motorola Moto G15","Motorola Moto G05",
+  "Motorola Moto G84","Motorola Moto G73","Motorola Moto G63","Motorola Moto G53",
+  "Motorola Moto G54 5G","Motorola Moto G14","Motorola Moto G04",
+  "Motorola Moto G Stylus 5G (2024)","Motorola Moto G Power 5G (2024)",
+  "Motorola Razr 50 Ultra","Motorola Razr 50","Motorola Razr 40 Ultra","Motorola Razr 40",
+  "Motorola ThinkPhone 25","Motorola ThinkPhone",
+  "Realme GT 7 Pro","Realme GT 6","Realme GT 5 Pro","Realme GT 5",
+  "Realme GT 3","Realme GT 2 Pro","Realme GT 2","Realme GT Master",
+  "Realme 14 Pro+","Realme 14 Pro","Realme 13 Pro+","Realme 13 Pro","Realme 13",
+  "Realme 12 Pro+","Realme 12 Pro","Realme 12+","Realme 12",
+  "Realme 11 Pro+","Realme 11 Pro","Realme 11",
+  "Realme 10 Pro+","Realme 10 Pro","Realme 10",
+  "Realme 9 Pro+","Realme 9 Pro","Realme 9",
+  "Realme C67","Realme C65","Realme C55","Realme C53","Realme C51",
+  "Realme Narzo 70 Pro","Realme Narzo 70","Realme Narzo 60 Pro","Realme Narzo 60",
+  "OnePlus 13","OnePlus 13R","OnePlus 12","OnePlus 12R",
+  "OnePlus 11","OnePlus 11R","OnePlus 10 Pro","OnePlus 10T","OnePlus 10R",
+  "OnePlus 9 Pro","OnePlus 9","OnePlus 9R","OnePlus 9RT",
+  "OnePlus 8 Pro","OnePlus 8T","OnePlus 8",
+  "OnePlus Nord 4","OnePlus Nord 3","OnePlus Nord 2T","OnePlus Nord 2","OnePlus Nord CE4","OnePlus Nord CE3",
+  "OnePlus Open","OnePlus Pad",
+  "Oppo Find X8 Pro","Oppo Find X8","Oppo Find X7 Ultra","Oppo Find X7",
+  "Oppo Find X6 Pro","Oppo Find X6","Oppo Find X5 Pro","Oppo Find X5","Oppo Find X3 Pro","Oppo Find X3 Neo",
+  "Oppo Reno 12 Pro","Oppo Reno 12","Oppo Reno 11 Pro","Oppo Reno 11","Oppo Reno 11F",
+  "Oppo Reno 10 Pro+","Oppo Reno 10 Pro","Oppo Reno 10",
+  "Oppo Reno 9 Pro+","Oppo Reno 9 Pro","Oppo Reno 9","Oppo Reno 8 Pro","Oppo Reno 8",
+  "Oppo A98","Oppo A78","Oppo A58","Oppo A38","Oppo A18",
+  "Vivo X200 Pro","Vivo X200","Vivo X100 Ultra","Vivo X100 Pro","Vivo X100",
+  "Vivo X90 Pro+","Vivo X90 Pro","Vivo X90","Vivo X80 Pro","Vivo X80",
+  "Vivo X70 Pro+","Vivo X70 Pro","Vivo V40 Pro","Vivo V40","Vivo V30 Pro","Vivo V30","Vivo V30e",
+  "Vivo V29 Pro","Vivo V29","Vivo V27 Pro","Vivo V27",
+  "Vivo Y200","Vivo Y100","Vivo Y36","Vivo Y28","Vivo Y18",
+  "Vivo T3 Ultra","Vivo T3 Pro","Vivo T3","Vivo T2 Pro","Vivo T2",
+  "ASUS ROG Phone 9 Pro","ASUS ROG Phone 9","ASUS ROG Phone 8 Pro","ASUS ROG Phone 8",
+  "ASUS ROG Phone 7 Ultimate","ASUS ROG Phone 7","ASUS ROG Phone 6 Pro","ASUS ROG Phone 6",
+  "ASUS ROG Phone 5 Ultimate","ASUS ROG Phone 5",
+  "ASUS Zenfone 11 Ultra","ASUS Zenfone 10","ASUS Zenfone 9",
+  "Honor Magic 6 Pro","Honor Magic 6","Honor Magic 5 Pro","Honor Magic 5 Lite",
+  "Honor 200 Pro","Honor 200","Honor 200 Lite","Honor 90","Honor 90 Lite","Honor 80","Honor 70",
+  "Honor X9b","Honor X9a","Honor X8b","Honor X7b","Honor Pad 9",
+  "Nothing Phone (3)","Nothing Phone (2a) Plus","Nothing Phone (2a)","Nothing Phone (2)","Nothing Phone (1)",
+  "Google Pixel 9 Pro XL","Google Pixel 9 Pro","Google Pixel 9","Google Pixel 9a",
+  "Google Pixel 8 Pro","Google Pixel 8","Google Pixel 8a",
+  "Google Pixel 7 Pro","Google Pixel 7","Google Pixel 7a","Google Pixel 6 Pro","Google Pixel 6","Google Pixel 6a",
+  "LG V60 ThinQ","LG Velvet","LG Wing",
+  "Sony Xperia 1 VI","Sony Xperia 5 V","Sony Xperia 10 VI","Sony Xperia Pro-I","Sony Xperia 1 V","Sony Xperia 5 IV",
+  "Huawei Pura 70 Ultra","Huawei Pura 70 Pro","Huawei Pura 70","Huawei P60 Pro","Huawei P60",
+  "Huawei Mate 60 Pro","Huawei Mate 60","Huawei Mate 50 Pro",
+  "Huawei Nova 12 Ultra","Huawei Nova 12 Pro","Huawei Nova 12i",
+  "Infinix GT 20 Pro","Infinix GT 10 Pro",
+  "Infinix Zero 40 Pro","Infinix Zero 40","Infinix Zero 30",
+  "Infinix Note 40 Pro","Infinix Note 40","Infinix Note 30",
+  "Infinix Hot 40 Pro","Infinix Hot 40","Infinix Hot 30",
+  "Tecno Camon 30 Premier","Tecno Camon 30 Pro","Tecno Camon 30",
+  "Tecno Spark 20 Pro","Tecno Spark 20","Tecno Spark 10 Pro",
+  "Tecno Phantom X2 Pro","Tecno Phantom V Fold","Tecno Pova 6 Pro","Tecno Pova 5",
+  "ZTE Nubia Red Magic 9S Pro","ZTE Nubia Red Magic 9 Pro",
+  "ZTE Nubia Red Magic 8 Pro","ZTE Nubia Red Magic 7 Pro",
+  "ZTE Nubia Z60 Ultra","ZTE Axon 50 Ultra",
+  "Xiaomi POCO (gen\u00e9rico)","Multilaser G-Max 3","Positivo Twist",
+];
+
+const IPHONE_MODELS = [
+  "iPhone 16 Pro Max","iPhone 16 Pro","iPhone 16 Plus","iPhone 16",
+  "iPhone 15 Pro Max","iPhone 15 Pro","iPhone 15 Plus","iPhone 15",
+  "iPhone 14 Pro Max","iPhone 14 Pro","iPhone 14 Plus","iPhone 14",
+  "iPhone 13 Pro Max","iPhone 13 Pro","iPhone 13","iPhone 13 mini",
+  "iPhone 12 Pro Max","iPhone 12 Pro","iPhone 12","iPhone 12 mini",
+  "iPhone 11 Pro Max","iPhone 11 Pro","iPhone 11",
+  "iPhone XR","iPhone XS Max","iPhone XS",
+  "iPhone SE (3rd Gen)","iPhone SE (2nd Gen)",
+];
+
+const EMULATOR_TYPES = [
+  "Gameloop (oficial)","BlueStacks 5","BlueStacks 4",
+  "LDPlayer 9","LDPlayer 5","Memu Play","Nox Player","MuMu Player","PC Direct Play",
+];
+
+const EMULATOR_SENSI_X = {"Gameloop (oficial)":1.00,"BlueStacks 5":1.04,"BlueStacks 4":1.02,"LDPlayer 9":1.03,"LDPlayer 5":1.01,"Memu Play":0.98,"Nox Player":0.97,"MuMu Player":1.02,"PC Direct Play":1.00};
+const EMULATOR_SENSI_Y = {"Gameloop (oficial)":0.95,"BlueStacks 5":0.98,"BlueStacks 4":0.96,"LDPlayer 9":0.97,"LDPlayer 5":0.95,"Memu Play":0.93,"Nox Player":0.92,"MuMu Player":0.97,"PC Direct Play":0.95};
+
+const BRAND_PREFIXES = [
+  ["Samsung Galaxy","Samsung"],["Samsung","Samsung"],
+  ["Xiaomi Redmi","Redmi"],["Redmi","Redmi"],["Xiaomi POCO","Poco"],["Poco","Poco"],["Xiaomi","Xiaomi"],
+  ["Motorola","Motorola"],["Realme","Realme"],["OnePlus","OnePlus"],["Oppo","Oppo"],["Vivo","Vivo"],
+  ["ASUS ROG","ASUS"],["ASUS Zenfone","ASUS"],["ASUS","ASUS"],
+  ["Honor","Honor"],["Nothing","Nothing"],["Google Pixel","Google"],["Google","Google"],
+  ["LG","LG"],["Sony","Sony"],["Huawei","Huawei"],["Infinix","Infinix"],["Tecno","Tecno"],
+  ["ZTE Nubia","ZTE"],["ZTE","ZTE"],["Multilaser","Multilaser"],["Positivo","Positivo"],
+];
+
+const BASE_SENS = {"geral":85,"red_dot":70,"mira_2x":55,"mira_4x":40,"awm":8,"olhadinha":65,"disparo":75};
+const SENS_KEYS = [["geral","Geral"],["red_dot","Red Dot"],["mira_2x","Mira 2x"],["mira_4x","Mira 4x"],["awm","AWM"],["olhadinha","Olhadinha"],["disparo","Disparo"]];
+const STYLE_F = {
+  Capa:   {"geral":1.10,"red_dot":1.06,"mira_2x":1.02,"mira_4x":0.96,"awm":0.90,"olhadinha":1.06,"disparo":1.08},
+  Rush:   {"geral":1.15,"red_dot":1.10,"mira_2x":1.04,"mira_4x":0.90,"awm":0.85,"olhadinha":1.10,"disparo":1.12},
+  Suporte:{"geral":0.92,"red_dot":0.96,"mira_2x":1.02,"mira_4x":1.08,"awm":1.10,"olhadinha":0.96,"disparo":0.94},
+  Misto:  {"geral":1.00,"red_dot":1.00,"mira_2x":1.00,"mira_4x":1.00,"awm":1.00,"olhadinha":1.00,"disparo":1.00},
+};
+
+const HUD = {
+  2: ["HUD B\u00e1sico \u2013 2 Dedos","\u2022 Tiro: canto inferior direito","\u2022 Mira: canto superior esquerdo","\u2022 Joystick: canto inferior esquerdo","\u2022 Pular/Recarregar: lado direito","\u2022 Bot\u00f5es: Grande","\u2022 Transpar\u00eancia: 50%","\u2022 Layout: Padr\u00e3o"],
+  3: ["HUD Intermedi\u00e1rio \u2013 3 Dedos","\u2022 Tiro: canto superior direito","\u2022 Mira: canto inferior direito","\u2022 Joystick: canto inferior esquerdo","\u2022 Scope: canto superior esquerdo","\u2022 Pular: lado direito","\u2022 Bot\u00f5es: M\u00e9dio","\u2022 Transpar\u00eancia: 40%","\u2022 Layout: 3 dedos"],
+  4: ["HUD Avan\u00e7ado \u2013 4 Dedos","\u2022 Tiro: canto superior direito","\u2022 Mira: canto superior esquerdo","\u2022 Joystick: canto inferior esquerdo","\u2022 Scope: canto inferior direito","\u2022 Pular/Deitar: lado direito","\u2022 Recarregar: lado direito","\u2022 Bot\u00f5es: M\u00e9dio-Pequeno","\u2022 Transpar\u00eancia: 30%","\u2022 Layout: 4 dedos"],
+  5: ["HUD Profissional \u2013 5 Dedos","\u2022 Tiro: canto superior direito","\u2022 Mira: canto superior esquerdo","\u2022 Joystick: canto inferior esquerdo","\u2022 Scope: canto inferior direito","\u2022 Pular: lado esquerdo","\u2022 Recarregar/Interagir: lado direito","\u2022 Bot\u00f5es: Pequeno","\u2022 Transpar\u00eancia: 20%","\u2022 Layout: 5 dedos (pro)"],
+};
+
+// ─── Helpers ───────────────────────────────────────────────────────
+function getBrand(m) {
+  for (const [prefix,brand] of BRAND_PREFIXES) if (m.startsWith(prefix)) return brand;
+  return "Outros";
+}
+
+function getBrands() {
+  const s = new Set();
+  for (const m of ANDROID_MODELS) s.add(getBrand(m));
+  return ["Todas as Marcas", ...Array.from(s).sort()];
+}
+
+function filterByBrand(brand) {
+  if (!brand || brand === "Todas as Marcas") return ANDROID_MODELS;
+  return ANDROID_MODELS.filter(m => getBrand(m) === brand);
+}
+
+function toast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2200);
+}
+
+function now() { return new Date().toISOString(); }
+function fmtDate(iso) { try { return new Date(iso).toLocaleString("pt-BR"); } catch(e) { return "?"; } }
+
+// ─── UI Init ───────────────────────────────────────────────────────
+function populateSelect(id, arr, selected) {
+  const sel = document.getElementById(id);
+  sel.innerHTML = arr.map(v => `<option value="${v}"${v===selected?" selected":""}>${v}</option>`).join("");
+}
+
+// Brands
+const brandSel = document.getElementById("brand");
+const brands = getBrands();
+populateSelect("brand", brands, "Todas as Marcas");
+
+// Default models
+populateSelect("model", ANDROID_MODELS, ANDROID_MODELS[0]);
+
+// Device change
+document.getElementById("device").addEventListener("change", function() {
+  const v = this.value;
+  const brandField = document.getElementById("brand-field");
+  const modelSel = document.getElementById("model");
+  if (v === "iPhone") {
+    brandField.classList.add("hidden");
+    populateSelect("model", IPHONE_MODELS, IPHONE_MODELS[0]);
+  } else if (v === "Emulador") {
+    brandField.classList.add("hidden");
+    populateSelect("model", EMULATOR_TYPES, EMULATOR_TYPES[0]);
+  } else {
+    brandField.classList.remove("hidden");
+    const brand = document.getElementById("brand").value;
+    const models = filterByBrand(brand);
+    populateSelect("model", models, models[0] || "");
+  }
+});
+
+// Brand change
+document.getElementById("brand").addEventListener("change", function() {
+  if (document.getElementById("device").value === "Android") {
+    const models = filterByBrand(this.value);
+    populateSelect("model", models, models[0] || "");
+  }
+});
+
+// ─── Calculation ───────────────────────────────────────────────────
+function calcular(device, model, fps, fingers, style) {
+  const isEmu = device === "Emulador";
+  const devF = device === "Android" ? 1.0 : (device === "iPhone" ? 0.94 : 0.92);
+  const fpsF = {30:1.20,60:1.00,90:0.88,120:0.78}[parseInt(fps)];
+  const finF = {2:1.15,3:1.00,4:0.88,5:0.78}[parseInt(fingers)];
+  const styF = STYLE_F[style];
+  let seed = 0; for (let i=0; i<model.length; i++) seed += model.charCodeAt(i);
+  seed = (seed % 7) - 3;
+  const off = seed * 0.4;
+
+  const out = {};
+  for (const [k] of SENS_KEYS) {
+    out[k] = Math.max(1, Math.min(100, Math.round(BASE_SENS[k] * devF * fpsF * finF * styF[k] + off)));
+  }
+
+  // DPI
+  if (isEmu) {
+    out.dpi = Math.max(320, Math.min(640, Math.round(380 + seed * 5)));
+  } else {
+    const dpiBase = device === "iPhone" ? 460 : 400;
+    const dpiFps = {30:0.96,60:1.00,90:1.04,120:1.08}[parseInt(fps)];
+    const dpiFin = {2:1.00,3:1.00,4:0.97,5:0.94}[parseInt(fingers)];
+    const dpiSty = {Capa:1.06,Rush:1.04,Suporte:0.95,Misto:1.00}[style];
+    out.dpi = Math.max(320, Math.min(640, Math.round(dpiBase * dpiFps * dpiFin * dpiSty + seed * 5)));
+  }
+
+  // Sensi X/Y
+  if (isEmu) {
+    const fpsI = parseInt(fps);
+    const fpsEmu = {30:0.92,60:1.00,90:1.06,120:1.10}[fpsI];
+    const finEmu = {2:1.10,3:1.00,4:0.92,5:0.85}[parseInt(fingers)];
+    const xf = EMULATOR_SENSI_X[model] || 1.0;
+    const yf = EMULATOR_SENSI_Y[model] || 0.95;
+    out.sensi_x = Math.max(1, Math.min(100, Math.round(55 * fpsEmu * finEmu * styF.geral * xf + off)));
+    out.sensi_y = Math.max(1, Math.min(100, Math.round(45 * fpsEmu * finEmu * styF.geral * yf + off)));
+  } else {
+    out.sensi_x = null;
+    out.sensi_y = null;
+  }
+
+  return out;
+}
+
+// ─── Gerar ─────────────────────────────────────────────────────────
+let currentResults = null;
+
+function gerar() {
+  const device = document.getElementById("device").value;
+  const model = document.getElementById("model").value;
+  const fps = document.getElementById("fps").value;
+  const fingers = document.getElementById("fingers").value;
+  const style = document.getElementById("style").value;
+
+  if (!model) { toast("Selecione um modelo."); return; }
+
+  const results = calcular(device, model, fps, fingers, style);
+  currentResults = { device, model, fps, fingers, style, sensitivities: results, timestamp: now() };
+
+  // Display
+  const list = document.getElementById("sensList");
+  const isEmu = device === "Emulador";
+  let html = "";
+  for (const [k,dn] of SENS_KEYS) {
+    const v = results[k];
+    html += sensRow(dn, v, "");
+  }
+  html += sensRow("DPI", results.dpi, "dpi");
+  if (isEmu) {
+    if (results.sensi_x != null) html += sensRow("Sensi X", results.sensi_x, "emu");
+    if (results.sensi_y != null) html += sensRow("Sensi Y", results.sensi_y, "emu");
+  }
+  list.innerHTML = html;
+
+  // HUD
+  const hudDiv = document.getElementById("hudText");
+  if (isEmu) {
+    hudDiv.textContent = "HUD para Emulador\n\n\u2022 Mapeie os controles no emulador\n\u2022 WASD: movimenta\u00e7\u00e3o\n\u2022 Mouse: mira (Sensi X/Y)\n\u2022 Clique esquerdo: atirar\n\u2022 Clique direito: mirar\n\u2022 R: recarregar\n\u2022 Shift: correr\n\u2022 Espa\u00e7o: pular\n\u2022 Ajuste no Gameloop / BlueStacks / LDPlayer";
+  } else {
+    const f = parseInt(fingers);
+    const h = HUD[f] || HUD[4];
+    hudDiv.textContent = "\u2605 " + h[0] + "\n\n" + h.slice(1).join("\n");
+  }
+
+  document.getElementById("resultsCard").classList.remove("hidden");
+  salvarHistorico(currentResults);
+  toast("Sensibilidade gerada!");
+}
+
+function sensRow(label, value, cls) {
+  const pct = Math.min(100, Math.max(0, value < 100 ? value : ((value - 320) / 3.2)));
+  return `<div class="sens-item"><span class="sens-label">${label}</span><div class="sens-bar-wrap"><div class="sens-bar ${cls}" style="width:${value < 200 ? value : ((value-320)/3.2)}%"></div></div><span class="sens-value">${value}</span></div>`;
+}
+
+// ─── Copiar ────────────────────────────────────────────────────────
+function copiar() {
+  if (!currentResults) return;
+  const r = currentResults;
+  const s = r.sensitivities;
+  let lines = [
+    `=== FF Sensi Pro \u2014 Sensibilidades Geradas ===`,
+    `Data: ${new Date().toLocaleString("pt-BR")}`,
+    `Dispositivo: ${r.device}  |  Modelo: ${r.model}`,
+    `FPS: ${r.fps}  |  Dedos: ${r.fingers}  |  Estilo: ${r.style}`,
+    "\u2500".repeat(40),
+  ];
+  for (const [k,dn] of SENS_KEYS) lines.push(`  ${dn.padEnd(12)}: ${s[k].toString().padStart(3)}`);
+  lines.push(`  ${"DPI".padEnd(12)}: ${s.dpi.toString().padStart(3)}`);
+  if (s.sensi_x != null) lines.push(`  ${"Sensi X".padEnd(12)}: ${s.sensi_x.toString().padStart(3)}`);
+  if (s.sensi_y != null) lines.push(`  ${"Sensi Y".padEnd(12)}: ${s.sensi_y.toString().padStart(3)}`);
+  lines.push("\u2500".repeat(40));
+  lines.push("Sensibilidades recomendadas \u2014 sem v\u00ednculo oficial com Free Fire.");
+
+  const text = lines.join("\n");
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => toast("Copiado!")).catch(() => fallbackCopy(text));
+  } else {
+    fallbackCopy(text);
+  }
+}
+
+function fallbackCopy(text) {
+  const ta = document.createElement("textarea");
+  ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand("copy"); toast("Copiado!"); } catch(e) { toast("Erro ao copiar"); }
+  document.body.removeChild(ta);
+}
+
+// ─── Exportar ──────────────────────────────────────────────────────
+function exportar() {
+  if (!currentResults) return;
+  const r = currentResults;
+  const s = r.sensitivities;
+  const fp = `sensibilidade_ff_${new Date().toISOString().slice(0,10)}.txt`;
+
+  let lines = [
+    "\u2554" + "\u2550".repeat(46) + "\u2557",
+    "\u2551  FF Sensi Pro v1.0.0".padEnd(48) + "\u2551",
+    "\u2551  Sensibilidades Recomendadas \u2013 Free Fire".padEnd(48) + "\u2551",
+    "\u255a" + "\u2550".repeat(46) + "\u255d",
+    "",
+    `  Dispositivo : ${r.device}`,
+    `  Modelo      : ${r.model}`,
+    `  FPS         : ${r.fps}`,
+    `  Dedos       : ${r.fingers}`,
+    `  Estilo      : ${r.style}`,
+    `  Data        : ${new Date().toLocaleString("pt-BR")}`,
+    "",
+    "\u2500".repeat(48),
+    "",
+  ];
+  for (const [k,dn] of SENS_KEYS) {
+    const v = s[k];
+    const bar = "\u2588".repeat(Math.floor(v/2)) + "\u2592".repeat(50-Math.floor(v/2));
+    lines.push(`  ${dn.padEnd(12)}: ${v.toString().padStart(3)}  ${bar}`);
+  }
+  let dpiBar = "\u2588".repeat(Math.floor((s.dpi-300)/7)) + "\u2592".repeat(50-Math.floor((s.dpi-300)/7));
+  lines.push(`  ${"DPI".padEnd(12)}: ${s.dpi.toString().padStart(3)}  ${dpiBar}`);
+  if (s.sensi_x != null) {
+    let xb = "\u2588".repeat(Math.floor(s.sensi_x/2)) + "\u2592".repeat(50-Math.floor(s.sensi_x/2));
+    lines.push(`  ${"Sensi X".padEnd(12)}: ${s.sensi_x.toString().padStart(3)}  ${xb}`);
+  }
+  if (s.sensi_y != null) {
+    let yb = "\u2588".repeat(Math.floor(s.sensi_y/2)) + "\u2592".repeat(50-Math.floor(s.sensi_y/2));
+    lines.push(`  ${"Sensi Y".padEnd(12)}: ${s.sensi_y.toString().padStart(3)}  ${yb}`);
+  }
+
+  const fid = parseInt(r.fingers);
+  const h = HUD[fid] || HUD[4];
+  lines.push("", "\u2500".repeat(48), `  ${h[0]}`, "\u2500".repeat(48), "");
+  for (let i=1; i<h.length; i++) lines.push(`  ${h[i]}`);
+
+  lines.push("", "\u2554" + "\u2550".repeat(46) + "\u2557");
+  lines.push("\u2551  AVISO: Sensibilidades meramente recomendativas.".padEnd(48) + "\u2551");
+  lines.push("\u2551  Sem v\u00ednculo oficial com Free Fire ou Garena.".padEnd(48) + "\u2551");
+  lines.push("\u255a" + "\u2550".repeat(46) + "\u255d");
+
+  const blob = new Blob([lines.join("\n")], {type:"text/plain;charset=utf-8"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = fp; a.click();
+  URL.revokeObjectURL(a.href);
+  toast("Arquivo exportado!");
+}
+
+// ─── Limpar ────────────────────────────────────────────────────────
+function limpar() {
+  currentResults = null;
+  document.getElementById("resultsCard").classList.add("hidden");
+}
+
+// ─── Hist\u00f3rico ──────────────────────────────────────────────────────
+function salvarHistorico(entry) {
+  let h = JSON.parse(localStorage.getItem("ffsensi_history") || "[]");
+  h.unshift(entry);
+  if (h.length > 50) h = h.slice(0, 50);
+  localStorage.setItem("ffsensi_history", JSON.stringify(h));
+  renderHistorico();
+}
+
+function renderHistorico() {
+  const div = document.getElementById("historyList");
+  const h = JSON.parse(localStorage.getItem("ffsensi_history") || "[]");
+  if (!h.length) { div.innerHTML = '<div class="empty">Nenhum hist\u00f3rico ainda.</div>'; return; }
+  div.innerHTML = h.map(e => {
+    const s = e.style + " \u2022 " + e.fingers + " dedos \u2022 " + e.device + " \u2022 " + e.fps + " FPS";
+    return `<div class="hist-item"><div class="hist-date">${fmtDate(e.timestamp)}</div><div class="hist-summary">${s}</div></div>`;
+  }).join("");
+}
+
+// ─── Service Worker ───────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
+// ─── Init ──────────────────────────────────────────────────────────
+renderHistorico();
+</script>
+</body>
+</html>
