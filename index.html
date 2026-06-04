@@ -204,6 +204,7 @@
         <option value="iPhone">iPhone</option>
         <option value="Emulador">Emulador</option>
         <option value="Mobilador">Mobilador</option>
+        <option value="FF_x86">Free Fire x86</option>
       </select>
     </div>
     <div class="field" id="brand-field">
@@ -459,6 +460,13 @@ const MOBILADOR_TYPES = [
 const MOBILADOR_SENSI_X = {"GG Mouse Pro 2 (Padrão)":0.98,"Panda Mouse":1.02,"Octopus":0.96,"Mouse + Teclado OTG":1.00,"Teclado + Mouse Bluetooth":0.97};
 const MOBILADOR_SENSI_Y = {"GG Mouse Pro 2 (Padrão)":0.92,"Panda Mouse":0.94,"Octopus":0.90,"Mouse + Teclado OTG":0.93,"Teclado + Mouse Bluetooth":0.91};
 
+const FF_X86_TYPES = [
+  "PC Baixo (4GB RAM)","PC Médio (8GB RAM)","PC Alto (16GB RAM)",
+  "PC Gamer (32GB RAM)","Notebook Básico","Notebook Gamer",
+];
+const FF_X86_SENSI_X = {"PC Baixo (4GB RAM)":1.02,"PC Médio (8GB RAM)":1.00,"PC Alto (16GB RAM)":0.98,"PC Gamer (32GB RAM)":0.96,"Notebook Básico":1.04,"Notebook Gamer":0.97};
+const FF_X86_SENSI_Y = {"PC Baixo (4GB RAM)":0.97,"PC Médio (8GB RAM)":0.95,"PC Alto (16GB RAM)":0.92,"PC Gamer (32GB RAM)":0.90,"Notebook Básico":0.99,"Notebook Gamer":0.91};
+
 const BRAND_PREFIXES = [
   ["Samsung Galaxy","Samsung"],["Samsung","Samsung"],
   ["LG","LG"],
@@ -540,6 +548,9 @@ document.getElementById("device").addEventListener("change", function() {
   } else if (v === "Mobilador") {
     brandField.classList.add("hidden");
     populateSelect("model", MOBILADOR_TYPES, MOBILADOR_TYPES[0]);
+  } else if (v === "FF_x86") {
+    brandField.classList.add("hidden");
+    populateSelect("model", FF_X86_TYPES, FF_X86_TYPES[0]);
   } else {
     brandField.classList.remove("hidden");
     const brand = document.getElementById("brand").value;
@@ -560,7 +571,8 @@ document.getElementById("brand").addEventListener("change", function() {
 function calcular(device, model, fps, fingers, style) {
   const isEmu = device === "Emulador";
   const isMob = device === "Mobilador";
-  const devF = device === "Android" ? 1.0 : (device === "iPhone" ? 0.94 : (isMob ? 0.95 : 0.92));
+  const isX86 = device === "FF_x86";
+  const devF = device === "Android" ? 1.0 : (device === "iPhone" ? 0.94 : (isMob ? 0.95 : (isX86 ? 0.90 : 0.92)));
   const fpsF = {30:1.20,60:1.00,90:0.88,120:0.78}[parseInt(fps)];
   const finF = {2:1.15,3:1.00,4:0.88,5:0.78}[parseInt(fingers)];
   const styF = STYLE_F[style];
@@ -574,7 +586,13 @@ function calcular(device, model, fps, fingers, style) {
   }
 
   // DPI
-  if (isEmu) {
+  if (isX86) {
+    const dpiBase = 480;
+    const dpiFps = {30:0.94,60:1.00,90:1.06,120:1.12}[parseInt(fps)];
+    const dpiFin = {2:1.02,3:1.00,4:0.96,5:0.92}[parseInt(fingers)];
+    const dpiSty = {Capa:1.06,Rush:1.04,Suporte:0.94,Misto:1.00}[style];
+    out.dpi = Math.max(320, Math.min(800, Math.round(dpiBase * dpiFps * dpiFin * dpiSty + seed * 5)));
+  } else if (isEmu) {
     out.dpi = Math.max(320, Math.min(640, Math.round(380 + seed * 5)));
   } else if (isMob) {
     const dpiBase = 420;
@@ -591,7 +609,15 @@ function calcular(device, model, fps, fingers, style) {
   }
 
   // Sensi X/Y
-  if (isEmu) {
+  if (isX86) {
+    const fpsI = parseInt(fps);
+    const fpsX86 = {30:0.90,60:1.00,90:1.08,120:1.14}[fpsI];
+    const finX86 = {2:1.12,3:1.00,4:0.90,5:0.82}[parseInt(fingers)];
+    const xf = FF_X86_SENSI_X[model] || 1.0;
+    const yf = FF_X86_SENSI_Y[model] || 0.95;
+    out.sensi_x = Math.max(1, Math.min(100, Math.round(58 * fpsX86 * finX86 * styF.geral * xf + off)));
+    out.sensi_y = Math.max(1, Math.min(100, Math.round(48 * fpsX86 * finX86 * styF.geral * yf + off)));
+  } else if (isEmu) {
     const fpsI = parseInt(fps);
     const fpsEmu = {30:0.92,60:1.00,90:1.06,120:1.10}[fpsI];
     const finEmu = {2:1.10,3:1.00,4:0.92,5:0.85}[parseInt(fingers)];
@@ -634,13 +660,14 @@ function gerar() {
   const list = document.getElementById("sensList");
   const isEmu = device === "Emulador";
   const isMob = device === "Mobilador";
+  const isX86 = device === "FF_x86";
   let html = "";
   for (const [k,dn] of SENS_KEYS) {
     const v = results[k];
     html += sensRow(dn, v, "");
   }
   html += sensRow("DPI", results.dpi, "dpi");
-  if (isEmu || isMob) {
+  if (isEmu || isMob || isX86) {
     if (results.sensi_x != null) html += sensRow("Sensi X", results.sensi_x, "emu");
     if (results.sensi_y != null) html += sensRow("Sensi Y", results.sensi_y, "emu");
   }
@@ -648,7 +675,9 @@ function gerar() {
 
   // HUD
   const hudDiv = document.getElementById("hudText");
-  if (isEmu) {
+  if (isX86) {
+    hudDiv.textContent = "HUD Free Fire x86 (Nativo PC)\n\n\u2022 WASD: movimenta\u00e7\u00e3o\n\u2022 Mouse: mira (Sensi X/Y)\n\u2022 Clique esquerdo: atirar\n\u2022 Clique direito: mirar\n\u2022 R: recarregar\n\u2022 Shift: correr\n\u2022 Espa\u00e7o: pular\n\u2022 1-5: trocar armas\n\u2022 B: mochila\n\u2022 M: mapa\n\u2022 Use o cliente nativo Free Fire x86";
+  } else if (isEmu) {
     hudDiv.textContent = "HUD para Emulador\n\n\u2022 Mapeie os controles no emulador\n\u2022 WASD: movimenta\u00e7\u00e3o\n\u2022 Mouse: mira (Sensi X/Y)\n\u2022 Clique esquerdo: atirar\n\u2022 Clique direito: mirar\n\u2022 R: recarregar\n\u2022 Shift: correr\n\u2022 Espa\u00e7o: pular\n\u2022 Ajuste no Gameloop / BlueStacks / LDPlayer";
   } else if (isMob) {
     hudDiv.textContent = "HUD Mobilador - Teclado e Mouse\n\n\u2022 Conecte teclado+mouse via OTG ou BT\n\u2022 WASD: movimenta\u00e7\u00e3o\n\u2022 Mouse: mira (Sensi X/Y)\n\u2022 Clique esquerdo: atirar\n\u2022 Clique direito: mirar\n\u2022 R: recarregar\n\u2022 Shift: correr\n\u2022 Espa\u00e7o: pular\n\u2022 Use GG Mouse Pro 2 / Panda Mouse / Octopus";
@@ -743,7 +772,20 @@ function exportar() {
   }
 
   const fid = parseInt(r.fingers);
-  if (r.device === "Mobilador") {
+  if (r.device === "FF_x86") {
+    lines.push("", "\u2500".repeat(48), "  HUD Free Fire x86 (Nativo PC)", "\u2500".repeat(48), "");
+    lines.push("  WASD: movimenta\u00e7\u00e3o");
+    lines.push("  Mouse: mira (Sensi X/Y)");
+    lines.push("  Clique esquerdo: atirar");
+    lines.push("  Clique direito: mirar");
+    lines.push("  R: recarregar");
+    lines.push("  Shift: correr");
+    lines.push("  Espa\u00e7o: pular");
+    lines.push("  1-5: trocar armas");
+    lines.push("  B: mochila");
+    lines.push("  M: mapa");
+    lines.push("  Use o cliente nativo Free Fire x86");
+  } else if (r.device === "Mobilador") {
     lines.push("", "\u2500".repeat(48), "  HUD Mobilador - Teclado e Mouse", "\u2500".repeat(48), "");
     lines.push("  Conecte teclado+mouse via OTG ou BT");
     lines.push("  WASD: movimenta\u00e7\u00e3o");
