@@ -140,6 +140,28 @@
     margin: 12px 0;
   }
 
+  /* Mode toggle */
+  .mode-toggle {
+    display: flex; gap: 4px; margin-bottom: 14px;
+    background: var(--card2); border-radius: var(--radius-sm); padding: 3px;
+  }
+  .mode-btn {
+    flex: 1; padding: 8px; border: none; border-radius: 8px;
+    font-size: 12px; font-weight: 600; cursor: pointer;
+    background: transparent; color: var(--text2); transition: all 0.2s;
+  }
+  .mode-btn.active { background: var(--accent); color: #fff; box-shadow: 0 2px 8px rgba(74,125,255,0.3); }
+
+  /* Confidence */
+  .conf-bar {
+    height: 6px; border-radius: 3px; background: rgba(255,255,255,0.08); margin: 8px 0 4px; overflow: hidden;
+  }
+  .conf-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
+  .conf-text { font-size: 11px; color: var(--text2); text-align: right; }
+
+  /* Explanation */
+  .explanation { font-size: 12px; line-height: 1.6; color: var(--text2); white-space: pre-line; padding: 8px 0; }
+
   /* HUD */
   .hud-text { font-size: 13px; line-height: 1.6; color: var(--text); white-space: pre-line; }
 
@@ -197,6 +219,12 @@
   <!-- Inputs -->
   <div class="card">
     <div class="card-title">Configura&ccedil;&otilde;es</div>
+
+    <div class="mode-toggle">
+      <button class="mode-btn active" onclick="setMode('basico')">B&aacute;sico</button>
+      <button class="mode-btn" onclick="setMode('avancado')">Avan&ccedil;ado</button>
+    </div>
+
     <div class="field">
       <label for="device">Dispositivo</label>
       <select id="device">
@@ -244,18 +272,106 @@
         <option value="Misto" selected>Misto</option>
       </select>
     </div>
+
+    <!-- Advanced fields -->
+    <div id="advanced-fields" class="hidden">
+      <div class="section-divider"></div>
+      <div class="card-title" style="font-size:12px;margin-bottom:8px">Par&acirc;metros Avan&ccedil;ados</div>
+      <div class="field" id="field-dpi">
+        <label for="mouse-dpi">DPI do Mouse / Sensibilidade da Tela</label>
+        <select id="mouse-dpi">
+          <option value="400">400</option>
+          <option value="600">600</option>
+          <option value="800" selected>800</option>
+          <option value="1000">1000</option>
+          <option value="1200">1200</option>
+          <option value="1600">1600</option>
+          <option value="2000">2000</option>
+          <option value="3200">3200</option>
+        </select>
+      </div>
+      <div class="field" id="field-res">
+        <label for="resolution">Resolu&ccedil;&atilde;o da Tela</label>
+        <select id="resolution">
+          <option value="1280x720">1280x720 (HD)</option>
+          <option value="1600x900">1600x900 (HD+)</option>
+          <option value="1920x1080" selected>1920x1080 (Full HD)</option>
+          <option value="2560x1440">2560x1440 (QHD)</option>
+          <option value="3440x1440">3440x1440 (Ultrawide)</option>
+        </select>
+      </div>
+      <div class="field" id="field-hz">
+        <label for="refresh-rate">Taxa de Atualiza&ccedil;&atilde;o (Hz)</label>
+        <select id="refresh-rate">
+          <option value="60">60 Hz</option>
+          <option value="90">90 Hz</option>
+          <option value="120" selected>120 Hz</option>
+          <option value="144">144 Hz</option>
+          <option value="165">165 Hz</option>
+          <option value="240">240 Hz</option>
+        </select>
+      </div>
+      <div class="field hidden" id="field-polling">
+        <label for="polling-rate">Polling Rate do Mouse</label>
+        <select id="polling-rate">
+          <option value="125">125 Hz</option>
+          <option value="250">250 Hz</option>
+          <option value="500" selected>500 Hz</option>
+          <option value="1000">1000 Hz</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="skill-level">N&iacute;vel de Habilidade</label>
+        <select id="skill-level">
+          <option value="iniciante">Iniciante</option>
+          <option value="intermediario" selected>Intermedi&aacute;rio</option>
+          <option value="avancado">Avan&ccedil;ado</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="priority">Prioridade</label>
+        <select id="priority">
+          <option value="equilibrado" selected>Equilibrado</option>
+          <option value="capa">Capa R&aacute;pida</option>
+          <option value="tracking">Rastreamento (Tracking)</option>
+          <option value="recuo">Controle de Recuo</option>
+          <option value="longo">Longo Alcance</option>
+        </select>
+      </div>
+    </div>
+
     <button class="btn btn-primary" id="generateBtn" onclick="gerar()">Gerar Sensibilidade</button>
   </div>
 
   <!-- Results -->
   <div class="card hidden" id="resultsCard">
     <div class="card-title">Sensibilidades Geradas</div>
+
+    <!-- Confidence -->
+    <div id="confidence-area" class="hidden">
+      <div class="conf-bar"><div class="conf-fill" id="confFill" style="width:0%"></div></div>
+      <div class="conf-text" id="confText">Confian&ccedil;a: 0%</div>
+    </div>
+
     <div id="sensList"></div>
+
+    <!-- Explanation -->
+    <div id="explanation-area" class="hidden">
+      <div class="section-divider"></div>
+      <div class="card-title" style="margin-bottom:4px;font-size:12px">An&aacute;lise</div>
+      <div class="explanation" id="explanationText"></div>
+    </div>
 
     <div class="section-divider"></div>
 
     <div class="card-title" style="margin-bottom:6px">HUD Recomendado</div>
     <div class="hud-text" id="hudText"></div>
+
+    <div class="section-divider hidden" id="suggest-divider"></div>
+    <div id="suggest-area" class="hidden">
+      <div class="card-title" style="margin-bottom:4px;font-size:12px">Sugest&otilde;es</div>
+      <div class="explanation" id="suggestText"></div>
+    </div>
 
     <div class="btn-row">
       <button class="btn btn-secondary" onclick="copiar()">Copiar</button>
@@ -534,11 +650,21 @@ populateSelect("brand", brands, "Todas as Marcas");
 // Default models
 populateSelect("model", ANDROID_MODELS, ANDROID_MODELS[0]);
 
+// Mode toggle
+function setMode(mode) {
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.textContent.toLowerCase().includes(mode)));
+  document.getElementById('advanced-fields').classList.toggle('hidden', mode === 'basico');
+}
+
 // Device change
 document.getElementById("device").addEventListener("change", function() {
   const v = this.value;
   const brandField = document.getElementById("brand-field");
   const modelSel = document.getElementById("model");
+  const pollingField = document.getElementById("field-polling");
+  const hasMouse = v === "Emulador" || v === "Mobilador" || v === "FF_x86";
+  pollingField.classList.toggle("hidden", !hasMouse);
+  document.getElementById("field-dpi").classList.toggle("hidden", !hasMouse);
   if (v === "iPhone") {
     brandField.classList.add("hidden");
     populateSelect("model", IPHONE_MODELS, IPHONE_MODELS[0]);
@@ -567,7 +693,7 @@ document.getElementById("brand").addEventListener("change", function() {
   }
 });
 
-// ─── Calculation ───────────────────────────────────────────────────
+// ─── Basic Calculation ─────────────────────────────────────────────
 function calcular(device, model, fps, fingers, style) {
   const isEmu = device === "Emulador";
   const isMob = device === "Mobilador";
@@ -579,64 +705,196 @@ function calcular(device, model, fps, fingers, style) {
   let seed = 0; for (let i=0; i<model.length; i++) seed += model.charCodeAt(i);
   seed = (seed % 7) - 3;
   const off = seed * 0.4;
-
   const out = {};
-  for (const [k] of SENS_KEYS) {
-    out[k] = Math.max(1, Math.min(100, Math.round(BASE_SENS[k] * devF * fpsF * finF * styF[k] + off)));
-  }
-
-  // DPI
+  for (const [k] of SENS_KEYS) { out[k] = Math.max(1, Math.min(100, Math.round(BASE_SENS[k] * devF * fpsF * finF * styF[k] + off))); }
   if (isX86) {
-    const dpiBase = 480;
-    const dpiFps = {30:0.94,60:1.00,90:1.06,120:1.12}[parseInt(fps)];
+    const dpiBase = 480; const dpiFps = {30:0.94,60:1.00,90:1.06,120:1.12}[parseInt(fps)];
     const dpiFin = {2:1.02,3:1.00,4:0.96,5:0.92}[parseInt(fingers)];
     const dpiSty = {Capa:1.06,Rush:1.04,Suporte:0.94,Misto:1.00}[style];
     out.dpi = Math.max(320, Math.min(800, Math.round(dpiBase * dpiFps * dpiFin * dpiSty + seed * 5)));
-  } else if (isEmu) {
-    out.dpi = Math.max(320, Math.min(640, Math.round(380 + seed * 5)));
+  } else if (isEmu) { out.dpi = Math.max(320, Math.min(640, Math.round(380 + seed * 5)));
   } else if (isMob) {
-    const dpiBase = 420;
-    const dpiFps = {30:0.96,60:1.00,90:1.04,120:1.08}[parseInt(fps)];
+    const dpiBase = 420; const dpiFps = {30:0.96,60:1.00,90:1.04,120:1.08}[parseInt(fps)];
     const dpiFin = {2:1.00,3:1.00,4:0.97,5:0.94}[parseInt(fingers)];
     const dpiSty = {Capa:1.06,Rush:1.04,Suporte:0.95,Misto:1.00}[style];
     out.dpi = Math.max(320, Math.min(700, Math.round(dpiBase * dpiFps * dpiFin * dpiSty + seed * 5)));
   } else {
-    const dpiBase = device === "iPhone" ? 460 : 400;
-    const dpiFps = {30:0.96,60:1.00,90:1.04,120:1.08}[parseInt(fps)];
+    const dpiBase = device === "iPhone" ? 460 : 400; const dpiFps = {30:0.96,60:1.00,90:1.04,120:1.08}[parseInt(fps)];
     const dpiFin = {2:1.00,3:1.00,4:0.97,5:0.94}[parseInt(fingers)];
     const dpiSty = {Capa:1.06,Rush:1.04,Suporte:0.95,Misto:1.00}[style];
     out.dpi = Math.max(320, Math.min(640, Math.round(dpiBase * dpiFps * dpiFin * dpiSty + seed * 5)));
   }
-
-  // Sensi X/Y
   if (isX86) {
-    const fpsI = parseInt(fps);
-    const fpsX86 = {30:0.90,60:1.00,90:1.08,120:1.14}[fpsI];
+    const fpsI = parseInt(fps); const fpsX86 = {30:0.90,60:1.00,90:1.08,120:1.14}[fpsI];
     const finX86 = {2:1.12,3:1.00,4:0.90,5:0.82}[parseInt(fingers)];
-    const xf = FF_X86_SENSI_X[model] || 1.0;
-    const yf = FF_X86_SENSI_Y[model] || 0.95;
+    const xf = FF_X86_SENSI_X[model] || 1.0; const yf = FF_X86_SENSI_Y[model] || 0.95;
     out.sensi_x = Math.max(1, Math.min(100, Math.round(58 * fpsX86 * finX86 * styF.geral * xf + off)));
     out.sensi_y = Math.max(1, Math.min(100, Math.round(48 * fpsX86 * finX86 * styF.geral * yf + off)));
   } else if (isEmu) {
-    const fpsI = parseInt(fps);
-    const fpsEmu = {30:0.92,60:1.00,90:1.06,120:1.10}[fpsI];
+    const fpsI = parseInt(fps); const fpsEmu = {30:0.92,60:1.00,90:1.06,120:1.10}[fpsI];
     const finEmu = {2:1.10,3:1.00,4:0.92,5:0.85}[parseInt(fingers)];
-    const xf = EMULATOR_SENSI_X[model] || 1.0;
-    const yf = EMULATOR_SENSI_Y[model] || 0.95;
+    const xf = EMULATOR_SENSI_X[model] || 1.0; const yf = EMULATOR_SENSI_Y[model] || 0.95;
     out.sensi_x = Math.max(1, Math.min(100, Math.round(55 * fpsEmu * finEmu * styF.geral * xf + off)));
     out.sensi_y = Math.max(1, Math.min(100, Math.round(45 * fpsEmu * finEmu * styF.geral * yf + off)));
   } else if (isMob) {
-    const fpsI = parseInt(fps);
-    const fpsMob = {30:0.94,60:1.00,90:1.04,120:1.08}[fpsI];
+    const fpsI = parseInt(fps); const fpsMob = {30:0.94,60:1.00,90:1.04,120:1.08}[fpsI];
     const finMob = {2:1.08,3:1.00,4:0.94,5:0.88}[parseInt(fingers)];
-    const xf = MOBILADOR_SENSI_X[model] || 0.98;
-    const yf = MOBILADOR_SENSI_Y[model] || 0.93;
+    const xf = MOBILADOR_SENSI_X[model] || 0.98; const yf = MOBILADOR_SENSI_Y[model] || 0.93;
     out.sensi_x = Math.max(1, Math.min(100, Math.round(50 * fpsMob * finMob * styF.geral * xf + off)));
     out.sensi_y = Math.max(1, Math.min(100, Math.round(42 * fpsMob * finMob * styF.geral * yf + off)));
+  } else { out.sensi_x = null; out.sensi_y = null; }
+  return out;
+}
+
+// ─── Advanced Calculation ──────────────────────────────────────────
+const HZ_FACTOR = {60:0.92,90:0.96,120:1.00,144:1.03,165:1.05,240:1.08};
+const RES_FACTOR = {"1280x720":1.06,"1600x900":1.03,"1920x1080":1.00,"2560x1440":0.94,"3440x1440":0.90};
+const POLLING_FACTOR = {125:0.95,250:0.98,500:1.00,1000:1.03};
+const SKILL_FACTOR = {iniciante:0.88,intermediario:1.00,avancado:1.08};
+const PRIO_FACTOR = {
+  equilibrado: {geral:1.00,red_dot:1.00,mira_2x:1.00,mira_4x:1.00,awm:1.00,olhadinha:1.00},
+  capa: {geral:1.10,red_dot:1.08,mira_2x:1.04,mira_4x:0.94,awm:0.88,olhadinha:1.08},
+  tracking: {geral:1.04,red_dot:1.06,mira_2x:1.04,mira_4x:1.02,awm:0.96,olhadinha:1.02},
+  recuo: {geral:0.94,red_dot:0.96,mira_2x:0.98,mira_4x:1.02,awm:1.06,olhadinha:0.94},
+  longo: {geral:0.90,red_dot:0.92,mira_2x:0.96,mira_4x:1.06,awm:1.12,olhadinha:0.92},
+};
+
+function calcularAvancado(device, model, fps, fingers, style, adv) {
+  const isEmu = device === "Emulador";
+  const isMob = device === "Mobilador";
+  const isX86 = device === "FF_x86";
+  const hasMouse = isEmu || isMob || isX86;
+
+  const mouseDpi = parseInt(adv.mouseDpi) || 800;
+  const res = adv.resolution || "1920x1080";
+  const hz = parseInt(adv.refreshRate) || 120;
+  const polling = parseInt(adv.pollingRate) || 500;
+  const skill = adv.skillLevel || "intermediario";
+  const prio = adv.priority || "equilibrado";
+
+  // Base device factor
+  let devF = device === "Android" ? 1.0 : (device === "iPhone" ? 0.94 : (isMob ? 0.95 : (isX86 ? 0.90 : 0.92)));
+
+  // Resolution factor: higher res = lower sens (more pixels to cross)
+  const resF = RES_FACTOR[res] || 1.0;
+
+  // Hz factor: higher Hz = smoother = can use slightly higher sens
+  const hzF = HZ_FACTOR[hz] || 1.0;
+
+  // Mouse DPI factor: higher DPI = needs lower in-game sens
+  const dpiScale = hasMouse ? (800 / mouseDpi) : 1.0;
+
+  // Polling rate factor
+  const pollF = hasMouse ? (POLLING_FACTOR[polling] || 1.0) : 1.0;
+
+  // Skill factor: advanced players can handle higher sens
+  const skillF = SKILL_FACTOR[skill] || 1.0;
+
+  // Priority factor
+  const prioF = PRIO_FACTOR[prio] || PRIO_FACTOR.equilibrado;
+
+  const fpsF = {30:1.20,60:1.00,90:0.88,120:0.78}[parseInt(fps)] || 1.0;
+  const finF = {2:1.15,3:1.00,4:0.88,5:0.78}[parseInt(fingers)] || 1.0;
+  const styF = STYLE_F[style] || STYLE_F.Misto;
+
+  let seed = 0; for (let i=0; i<model.length; i++) seed += model.charCodeAt(i);
+  seed = (seed % 7) - 3;
+  const off = seed * 0.4;
+
+  // Composite factor per category
+  const out = {};
+  for (const [k] of SENS_KEYS) {
+    // Combine all factors: base * device * fps * fingers * style * resolution * hz * dpi * polling * skill * priority
+    const composite = devF * fpsF * finF * styF[k] * resF * hzF * dpiScale * pollF * skillF * prioF[k];
+    out[k] = Math.max(1, Math.min(100, Math.round(BASE_SENS[k] * composite + off)));
+  }
+
+  // DPI calculation
+  if (isX86) {
+    const dpiBase = 450 + (mouseDpi > 1000 ? 30 : 0) + (hz >= 144 ? 20 : 0);
+    const dpiFps = {30:0.94,60:1.00,90:1.06,120:1.12}[parseInt(fps)] || 1.0;
+    const dpiFin = {2:1.02,3:1.00,4:0.96,5:0.92}[parseInt(fingers)] || 1.0;
+    const dpiSty = {Capa:1.06,Rush:1.04,Suporte:0.94,Misto:1.00}[style] || 1.0;
+    const dpiPrio = {capa:1.04,tracking:1.00,recuo:0.96,longo:0.94,equilibrado:1.00}[prio] || 1.0;
+    out.dpi = Math.max(320, Math.min(800, Math.round(dpiBase * dpiFps * dpiFin * dpiSty * dpiPrio + seed * 5)));
+  } else if (isEmu) {
+    const dpiBase = 360 + (mouseDpi > 1000 ? 20 : 0) + (hz >= 144 ? 15 : 0);
+    const dpiPrio = {capa:1.04,tracking:1.00,recuo:0.96,longo:0.94,equilibrado:1.00}[prio] || 1.0;
+    out.dpi = Math.max(320, Math.min(640, Math.round((dpiBase + seed * 3) * dpiPrio)));
+  } else if (isMob) {
+    const dpiBase = 420;
+    const dpiFps = {30:0.96,60:1.00,90:1.04,120:1.08}[parseInt(fps)] || 1.0;
+    const dpiFin = {2:1.00,3:1.00,4:0.97,5:0.94}[parseInt(fingers)] || 1.0;
+    const dpiSty = {Capa:1.06,Rush:1.04,Suporte:0.95,Misto:1.00}[style] || 1.0;
+    out.dpi = Math.max(320, Math.min(700, Math.round(dpiBase * dpiFps * dpiFin * dpiSty + seed * 5)));
+  } else {
+    const dpiBase = device === "iPhone" ? 460 : 400;
+    const dpiFps = {30:0.96,60:1.00,90:1.04,120:1.08}[parseInt(fps)] || 1.0;
+    const dpiFin = {2:1.00,3:1.00,4:0.97,5:0.94}[parseInt(fingers)] || 1.0;
+    const dpiSty = {Capa:1.06,Rush:1.04,Suporte:0.95,Misto:1.00}[style] || 1.0;
+    out.dpi = Math.max(320, Math.min(640, Math.round(dpiBase * dpiFps * dpiFin * dpiSty + seed * 5)));
+  }
+
+  // Sensi X/Y for mouse
+  if (isX86) {
+    const fpsI = parseInt(fps);
+    const fpsX86 = {30:0.90,60:1.00,90:1.08,120:1.14}[fpsI] || 1.0;
+    const finX86 = {2:1.12,3:1.00,4:0.90,5:0.82}[parseInt(fingers)] || 1.0;
+    const xf = FF_X86_SENSI_X[model] || 1.0;
+    const yf = FF_X86_SENSI_Y[model] || 0.95;
+    const hzX86 = HZ_FACTOR[hz] || 1.0;
+    out.sensi_x = Math.max(1, Math.min(100, Math.round(58 * fpsX86 * finX86 * styF.geral * xf * hzX86 * dpiScale * skillF * prioF.geral + off)));
+    out.sensi_y = Math.max(1, Math.min(100, Math.round(48 * fpsX86 * finX86 * styF.geral * yf * hzX86 * dpiScale * skillF * prioF.geral + off)));
+  } else if (isEmu) {
+    const fpsI = parseInt(fps);
+    const fpsEmu = {30:0.92,60:1.00,90:1.06,120:1.10}[fpsI] || 1.0;
+    const finEmu = {2:1.10,3:1.00,4:0.92,5:0.85}[parseInt(fingers)] || 1.0;
+    const xf = EMULATOR_SENSI_X[model] || 1.0;
+    const yf = EMULATOR_SENSI_Y[model] || 0.95;
+    out.sensi_x = Math.max(1, Math.min(100, Math.round(55 * fpsEmu * finEmu * styF.geral * xf * dpiScale * skillF * prioF.geral + off)));
+    out.sensi_y = Math.max(1, Math.min(100, Math.round(45 * fpsEmu * finEmu * styF.geral * yf * dpiScale * skillF * prioF.geral + off)));
+  } else if (isMob) {
+    const fpsI = parseInt(fps);
+    const fpsMob = {30:0.94,60:1.00,90:1.04,120:1.08}[fpsI] || 1.0;
+    const finMob = {2:1.08,3:1.00,4:0.94,5:0.88}[parseInt(fingers)] || 1.0;
+    const xf = MOBILADOR_SENSI_X[model] || 0.98;
+    const yf = MOBILADOR_SENSI_Y[model] || 0.93;
+    out.sensi_x = Math.max(1, Math.min(100, Math.round(50 * fpsMob * finMob * styF.geral * xf * skillF * prioF.geral + off)));
+    out.sensi_y = Math.max(1, Math.min(100, Math.round(42 * fpsMob * finMob * styF.geral * yf * skillF * prioF.geral + off)));
   } else {
     out.sensi_x = null;
     out.sensi_y = null;
   }
+
+  // Explanation
+  const explLines = [];
+  explLines.push("An\u00e1lise dos ajustes:");
+  if (skill === "iniciante") explLines.push("- N\u00edvel iniciante: valores reduzidos para mais estabilidade e controle.");
+  if (skill === "avancado") explLines.push("- N\u00edvel avan\u00e7ado: valores elevados para maior velocidade e precis\u00e3o.");
+  if (hz >= 144) explLines.push("- Taxa de atualiza\u00e7\u00e3o alta ("+hz+" Hz): permite sensibilidade mais responsiva.");
+  if (hz <= 60) explLines.push("- Taxa de atualiza\u00e7\u00e3o baixa ("+hz+" Hz): valores ajustados para evitar oscila\u00e7\u00f5es.");
+  if (hasMouse) {
+    if (mouseDpi >= 1600) explLines.push("- DPI alto ("+mouseDpi+"): compensado com valores mais baixos no jogo.");
+    if (mouseDpi <= 600) explLines.push("- DPI baixo ("+mouseDpi+"): compensado com valores mais altos no jogo.");
+    if (polling >= 500) explLines.push("- Polling rate "+polling+" Hz: resposta r\u00e1pida, sensibilidade ajustada.");
+    explLines.push("- Resolu\u00e7\u00e3o "+res+": fator de ajuste aplicado ("+resF.toFixed(2)+"x).");
+  }
+  const prioNames = {capa:"capa r\u00e1pida",tracking:"tracking",recuo:"controle de recuo",longo:"longo alcance",equilibrado:"equil\u00edbrio"};
+  explLines.push("- Prioridade: "+prioNames[prio]+" \u2014 fatores espec\u00edficos aplicados.");
+  explLines.push("- Modelo \""+model+"\": ajuste fino por hardware ("+(off > 0 ? "+" : "")+off.toFixed(1)+").");
+  out._explanation = explLines.join("\n");
+
+  // Confidence calculation
+  let conf = 70; // base
+  if (hz >= 120) conf += 5;
+  if (parseInt(fps) >= 60) conf += 5;
+  if (parseInt(fps) >= 90) conf += 3;
+  if (skill !== "iniciante") conf += 3;
+  if (hasMouse && mouseDpi >= 400 && mouseDpi <= 3200) conf += 4;
+  if (hasMouse && polling >= 500) conf += 3;
+  if (fingers >= 4) conf += 5;
+  if (fingers <= 2) conf -= 3;
+  out._confidence = Math.min(99, Math.max(40, conf));
 
   return out;
 }
@@ -653,7 +911,16 @@ function gerar() {
 
   if (!model) { toast("Selecione um modelo."); return; }
 
-  const results = calcular(device, model, fps, fingers, style);
+  const isAdvanced = !document.getElementById('advanced-fields').classList.contains('hidden');
+  const results = isAdvanced ? calcularAvancado(device, model, fps, fingers, style, {
+    mouseDpi: document.getElementById('mouse-dpi').value,
+    resolution: document.getElementById('resolution').value,
+    refreshRate: document.getElementById('refresh-rate').value,
+    pollingRate: document.getElementById('polling-rate').value,
+    skillLevel: document.getElementById('skill-level').value,
+    priority: document.getElementById('priority').value,
+  }) : calcular(device, model, fps, fingers, style);
+
   currentResults = { device, model, fps, fingers, style, sensitivities: results, timestamp: now() };
 
   // Display
@@ -672,6 +939,45 @@ function gerar() {
     if (results.sensi_y != null) html += sensRow("Sensi Y", results.sensi_y, "emu");
   }
   list.innerHTML = html;
+
+  // Confidence & Explanation
+  const confArea = document.getElementById("confidence-area");
+  const explArea = document.getElementById("explanation-area");
+  const suggestDiv = document.getElementById("suggest-divider");
+  const suggestArea = document.getElementById("suggest-area");
+  if (isAdvanced && results._confidence != null) {
+    confArea.classList.remove("hidden");
+    const conf = results._confidence;
+    document.getElementById("confFill").style.width = conf + "%";
+    document.getElementById("confFill").style.background = conf >= 80 ? "#34c759" : (conf >= 60 ? "#ff9f0a" : "#ff3b30");
+    document.getElementById("confText").textContent = "Confian\u00e7a: " + conf + "%";
+    explArea.classList.remove("hidden");
+    document.getElementById("explanationText").textContent = results._explanation || "";
+
+    // Suggestions
+    const mouseDpi = parseInt(document.getElementById('mouse-dpi').value);
+    const hz = parseInt(document.getElementById('refresh-rate').value);
+    const hasMouseVal = isEmu || isMob || isX86;
+    if (hasMouseVal && mouseDpi < 800 && hz >= 120) {
+      suggestDiv.classList.remove("hidden");
+      suggestArea.classList.remove("hidden");
+      document.getElementById("suggestText").textContent =
+        "Sugest\u00e3o: aumentar DPI do mouse para 800-1600 com Hz alto permite maior precis\u00e3o sem perder velocidade.";
+    } else if (hasMouseVal && mouseDpi > 2000) {
+      suggestDiv.classList.remove("hidden");
+      suggestArea.classList.remove("hidden");
+      document.getElementById("suggestText").textContent =
+        "Sugest\u00e3o: DPI muito alto ("+mouseDpi+"). Considere reduzir para 800-1600 e ajustar a sensibilidade no jogo para mais controle.";
+    } else {
+      suggestDiv.classList.add("hidden");
+      suggestArea.classList.add("hidden");
+    }
+  } else {
+    confArea.classList.add("hidden");
+    explArea.classList.add("hidden");
+    suggestDiv.classList.add("hidden");
+    suggestArea.classList.add("hidden");
+  }
 
   // HUD
   const hudDiv = document.getElementById("hudText");
