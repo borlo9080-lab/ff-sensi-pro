@@ -1,4 +1,4 @@
-const CACHE = "ffsensi-v2";
+const CACHE = "ffsensi-v3";
 const FILES = [
   ".",
   "index.html",
