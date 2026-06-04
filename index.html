@@ -2,17 +2,30 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="FF Sensi Pro">
 <meta name="theme-color" content="#0f1429">
+<meta name="mobile-web-app-capable" content="yes">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-icon-180.png">
 <link rel="apple-touch-icon" sizes="152x152" href="icons/apple-icon-152.png">
 <link rel="apple-touch-icon" sizes="120x120" href="icons/apple-icon-120.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+<!-- iOS Splash Screens -->
+<link rel="apple-touch-startup-image" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)" href="icons/splash-1290x2796.png">
+<link rel="apple-touch-startup-image" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3)" href="icons/splash-1179x2556.png">
+<link rel="apple-touch-startup-image" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3)" href="icons/splash-1284x2778.png">
+<link rel="apple-touch-startup-image" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)" href="icons/splash-1170x2532.png">
+<link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)" href="icons/splash-1125x2436.png">
+<link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2)" href="icons/splash-828x1792.png">
+<link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)" href="icons/splash-750x1334.png">
+<link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3)" href="icons/splash-1242x2208.png">
 <title>FF Sensi Pro</title>
 <style>
   :root {
@@ -29,23 +42,41 @@
     --radius-sm: 10px;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+  }
   body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background: var(--bg);
     color: var(--text);
     padding: 0 0 40px 0;
+    padding-left: env(safe-area-inset-left, 0);
+    padding-right: env(safe-area-inset-right, 0);
     min-height: 100vh;
+    min-height: -webkit-fill-available;
     -webkit-font-smoothing: antialiased;
+    -webkit-user-select: none;
+    user-select: none;
+    touch-action: manipulation;
   }
-  .container { max-width: 500px; margin: 0 auto; padding: 0 16px; }
+  .container {
+    max-width: 500px; margin: 0 auto; padding: 0 16px;
+    padding-left: calc(16px + env(safe-area-inset-left, 0));
+    padding-right: calc(16px + env(safe-area-inset-right, 0));
+  }
 
   /* Header */
   .header {
     background: linear-gradient(135deg, #141b3a, #1a2040);
     padding: 28px 20px 20px;
+    padding-top: calc(28px + env(safe-area-inset-top, 0));
+    padding-bottom: calc(20px + env(safe-area-inset-bottom, 0));
     text-align: center;
     border-bottom: 1px solid rgba(74,125,255,0.15);
     margin-bottom: 16px;
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
   }
   .header h1 { font-size: 26px; font-weight: 700; color: var(--accent); letter-spacing: -0.5px; }
   .header p { font-size: 13px; color: var(--text2); margin-top: 4px; }
@@ -150,6 +181,7 @@
     font-size: 12px; font-weight: 600; cursor: pointer;
     background: transparent; color: var(--text2); transition: all 0.2s;
   }
+  .mode-btn:active { transform: scale(0.95); }
   .mode-btn.active { background: var(--accent); color: #fff; box-shadow: 0 2px 8px rgba(74,125,255,0.3); }
 
   /* Confidence */
@@ -179,6 +211,7 @@
   /* Toast */
   .toast {
     position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    bottom: calc(24px + env(safe-area-inset-bottom, 0));
     background: var(--card2); color: var(--text);
     padding: 12px 24px; border-radius: 12px;
     font-size: 14px; font-weight: 500;
@@ -192,8 +225,33 @@
   /* empty state */
   .empty { text-align: center; color: var(--text2); font-size: 13px; padding: 20px 0; }
 
+  /* Advanced fields slide animation */
+  #advanced-fields {
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease, margin 0.35s ease;
+    max-height: 700px;
+    opacity: 1;
+  }
+  #advanced-fields.collapsed {
+    max-height: 0 !important;
+    opacity: 0;
+    margin: 0;
+    padding: 0;
+    border: none;
+    pointer-events: none;
+  }
+
   /* Hidden */
   .hidden { display: none !important; }
+
+  /* Native app fade-in */
+  @keyframes appFadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .app-content { animation: appFadeIn 0.35s ease-out; }
+
+  /* iOS standalone tweaks */
+  .ios-standalone .header { padding-top: calc(48px + env(safe-area-inset-top, 0)); }
+  .ios-standalone body { cursor: default; }
+  .ios-standalone .btn:active { opacity: 0.8; }
 
   /* Responsive touch */
   @media (prefers-color-scheme: light) {
@@ -209,6 +267,7 @@
 </head>
 <body>
 
+<div class="app-content">
 <div class="header">
   <h1>FF Sensi Pro</h1>
   <p>Gerador de Sensibilidade &bull; Free Fire</p>
@@ -221,8 +280,8 @@
     <div class="card-title">Configura&ccedil;&otilde;es</div>
 
     <div class="mode-toggle">
-      <button class="mode-btn active" onclick="setMode('basico')">B&aacute;sico</button>
-      <button class="mode-btn" onclick="setMode('avancado')">Avan&ccedil;ado</button>
+      <button class="mode-btn active" data-mode="basico" onclick="setMode('basico')">B&aacute;sico</button>
+      <button class="mode-btn" data-mode="avancado" onclick="setMode('avancado')">Avan&ccedil;ado</button>
     </div>
 
     <div class="field">
@@ -273,8 +332,18 @@
       </select>
     </div>
 
+    <!-- YouTuber Themes -->
+    <div class="section-divider"></div>
+    <div class="card-title" style="font-size:12px;margin-bottom:8px">Tema de YouTuber</div>
+    <div class="field">
+      <label for="youtuber">YouTuber</label>
+      <select id="youtuber">
+        <option value="">Nenhum (Gerar Automático)</option>
+      </select>
+    </div>
+
     <!-- Advanced fields -->
-    <div id="advanced-fields" class="hidden">
+    <div id="advanced-fields" class="collapsed">
       <div class="section-divider"></div>
       <div class="card-title" style="font-size:12px;margin-bottom:8px">Par&acirc;metros Avan&ccedil;ados</div>
       <div class="field" id="field-dpi">
@@ -376,6 +445,7 @@
     <div class="btn-row">
       <button class="btn btn-secondary" onclick="copiar()">Copiar</button>
       <button class="btn btn-secondary" onclick="exportar()">Exportar</button>
+      <button class="btn btn-secondary" id="shareBtn" onclick="compartilhar()">Compartilhar</button>
       <button class="btn btn-danger" onclick="limpar()">Limpar</button>
     </div>
   </div>
@@ -386,11 +456,12 @@
     <div id="historyList"><div class="empty">Nenhum hist&oacute;rico ainda.</div></div>
   </div>
 
-  <div style="text-align:center;padding:16px 0 32px;color:var(--text2);font-size:11px;line-height:1.5">
+  <div style="text-align:center;padding:16px 0 32px;padding-bottom:calc(32px + env(safe-area-inset-bottom, 0));color:var(--text2);font-size:11px;line-height:1.5">
     Sensibilidades meramente recomendativas.<br>
     Sem v&iacute;nculo oficial com Free Fire ou Garena.
   </div>
 
+</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -610,6 +681,31 @@ const HUD = {
   5: ["HUD Profissional \u2013 5 Dedos","\u2022 Tiro: canto superior direito","\u2022 Mira: canto superior esquerdo","\u2022 Joystick: canto inferior esquerdo","\u2022 Scope: canto inferior direito","\u2022 Pular: lado esquerdo","\u2022 Recarregar/Interagir: lado direito","\u2022 Bot\u00f5es: Pequeno","\u2022 Transpar\u00eancia: 20%","\u2022 Layout: 5 dedos (pro)"],
 };
 
+// ─── YouTuber Themes ─────────────────────────────────────────────
+const YOUTUBER_THEMES = {
+  "Blackn444":  {geral:90,red_dot:78,mira_2x:62,mira_4x:45,awm:10,olhadinha:72,disparo:82,dpi:420},
+  "Fantasma FF":{geral:88,red_dot:75,mira_2x:58,mira_4x:42,awm:9,olhadinha:68,disparo:80,dpi:400},
+  "Nobru":      {geral:82,red_dot:68,mira_2x:52,mira_4x:38,awm:7,olhadinha:62,disparo:74,dpi:380},
+  "El Gato":    {geral:86,red_dot:72,mira_2x:56,mira_4x:40,awm:8,olhadinha:66,disparo:78,dpi:410},
+  "Cerol":      {geral:84,red_dot:70,mira_2x:54,mira_4x:39,awm:8,olhadinha:64,disparo:76,dpi:390},
+  "Buxexa":     {geral:80,red_dot:66,mira_2x:50,mira_4x:36,awm:6,olhadinha:60,disparo:72,dpi:370},
+  "Loud":       {geral:87,red_dot:74,mira_2x:60,mira_4x:43,awm:9,olhadinha:67,disparo:79,dpi:405},
+};
+
+function aplicarTemaYoutuber(youtuber) {
+  if (!youtuber || !YOUTUBER_THEMES[youtuber]) return null;
+  const t = YOUTUBER_THEMES[youtuber];
+  const results = {};
+  for (const [k] of SENS_KEYS) results[k] = t[k] || BASE_SENS[k];
+  results.dpi = t.dpi || 400;
+  results.sensi_x = null;
+  results.sensi_y = null;
+  results._youtuber = youtuber;
+  results._explanation = `Tema "${youtuber}" aplicado — valores baseados no estilo e configurações públicas do youtuber. Ajuste fino conforme sua preferência.`;
+  results._confidence = 75;
+  return results;
+}
+
 // ─── Helpers ───────────────────────────────────────────────────────
 function getBrand(m) {
   for (const [prefix,brand] of BRAND_PREFIXES) if (m.startsWith(prefix)) return brand;
@@ -650,10 +746,17 @@ populateSelect("brand", brands, "Todas as Marcas");
 // Default models
 populateSelect("model", ANDROID_MODELS, ANDROID_MODELS[0]);
 
+// YouTuber themes
+populateSelect("youtuber", ["", ...Object.keys(YOUTUBER_THEMES)], "");
+
 // Mode toggle
 function setMode(mode) {
-  document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.textContent.toLowerCase().includes(mode)));
-  document.getElementById('advanced-fields').classList.toggle('hidden', mode === 'basico');
+  document.querySelectorAll('.mode-btn').forEach(b => {
+    const isMatch = b.getAttribute('data-mode') === mode;
+    b.classList.toggle('active', isMatch);
+  });
+  const af = document.getElementById('advanced-fields');
+  af.classList.toggle('collapsed', mode === 'basico');
 }
 
 // Device change
@@ -908,33 +1011,42 @@ function gerar() {
   const fps = document.getElementById("fps").value;
   const fingers = document.getElementById("fingers").value;
   const style = document.getElementById("style").value;
+  const youtuber = document.getElementById("youtuber").value;
 
   if (!model) { toast("Selecione um modelo."); return; }
+  haptic('light');
 
-  const isAdvanced = !document.getElementById('advanced-fields').classList.contains('hidden');
-  const results = isAdvanced ? calcularAvancado(device, model, fps, fingers, style, {
+  const isAdvanced = !document.getElementById('advanced-fields').classList.contains('collapsed');
+
+  // YouTuber theme overrides everything
+  const tema = aplicarTemaYoutuber(youtuber);
+  const results = tema || (isAdvanced ? calcularAvancado(device, model, fps, fingers, style, {
     mouseDpi: document.getElementById('mouse-dpi').value,
     resolution: document.getElementById('resolution').value,
     refreshRate: document.getElementById('refresh-rate').value,
     pollingRate: document.getElementById('polling-rate').value,
     skillLevel: document.getElementById('skill-level').value,
     priority: document.getElementById('priority').value,
-  }) : calcular(device, model, fps, fingers, style);
+  }) : calcular(device, model, fps, fingers, style));
 
-  currentResults = { device, model, fps, fingers, style, sensitivities: results, timestamp: now() };
+  currentResults = { device, model, fps, fingers, style, youtuber: youtuber || null, sensitivities: results, timestamp: now() };
 
   // Display
   const list = document.getElementById("sensList");
   const isEmu = device === "Emulador";
   const isMob = device === "Mobilador";
   const isX86 = device === "FF_x86";
+  const isTema = !!results._youtuber;
   let html = "";
+  if (isTema) {
+    html += `<div style="text-align:center;padding:8px 0 12px;font-weight:600;color:var(--accent);font-size:14px">Tema: ${results._youtuber}</div>`;
+  }
   for (const [k,dn] of SENS_KEYS) {
     const v = results[k];
     html += sensRow(dn, v, "");
   }
   html += sensRow("DPI", results.dpi, "dpi");
-  if (isEmu || isMob || isX86) {
+  if (!isTema && (isEmu || isMob || isX86)) {
     if (results.sensi_x != null) html += sensRow("Sensi X", results.sensi_x, "emu");
     if (results.sensi_y != null) html += sensRow("Sensi Y", results.sensi_y, "emu");
   }
@@ -945,7 +1057,7 @@ function gerar() {
   const explArea = document.getElementById("explanation-area");
   const suggestDiv = document.getElementById("suggest-divider");
   const suggestArea = document.getElementById("suggest-area");
-  if (isAdvanced && results._confidence != null) {
+  if ((isAdvanced || isTema) && results._confidence != null) {
     confArea.classList.remove("hidden");
     const conf = results._confidence;
     document.getElementById("confFill").style.width = conf + "%";
@@ -1006,13 +1118,14 @@ function sensRow(label, value, cls) {
 // ─── Copiar ────────────────────────────────────────────────────────
 function copiar() {
   if (!currentResults) return;
+  haptic('light');
   const r = currentResults;
   const s = r.sensitivities;
   let lines = [
     `=== FF Sensi Pro \u2014 Sensibilidades Geradas ===`,
     `Data: ${new Date().toLocaleString("pt-BR")}`,
     `Dispositivo: ${r.device}  |  Modelo: ${r.model}`,
-    `FPS: ${r.fps}  |  Dedos: ${r.fingers}  |  Estilo: ${r.style}`,
+    `FPS: ${r.fps}  |  Dedos: ${r.fingers}  |  Estilo: ${r.style}${r.youtuber ? `  |  Tema: ${r.youtuber}` : ""}`,
     "\u2500".repeat(40),
   ];
   for (const [k,dn] of SENS_KEYS) lines.push(`  ${dn.padEnd(12)}: ${s[k].toString().padStart(3)}`);
@@ -1038,9 +1151,40 @@ function fallbackCopy(text) {
   document.body.removeChild(ta);
 }
 
+// ─── Haptic ────────────────────────────────────────────────────────
+function haptic(style) {
+  if (navigator.vibrate) navigator.vibrate(style === 'heavy' ? 12 : 6);
+  try {
+    if (window.TapticEngine) window.TapticEngine.impact({style: style === 'heavy' ? 'heavy' : 'light'});
+  } catch(e) {}
+}
+
+// ─── Compartilhar (Web Share) ────────────────────────────────────
+function compartilhar() {
+  if (!currentResults) return;
+  haptic('light');
+  const r = currentResults;
+  const s = r.sensitivities;
+  let text = `FF Sensi Pro — ${r.device} | ${r.model} | ${r.fps}FPS | ${r.fingers} dedos | ${r.style}`;
+  if (r.youtuber) text += ` | Tema: ${r.youtuber}`;
+  text += `\n\n`;
+  for (const [k,dn] of SENS_KEYS) text += `${dn}: ${s[k]}\n`;
+  text += `DPI: ${s.dpi}\n`;
+  if (s.sensi_x != null) text += `Sensi X: ${s.sensi_x}\n`;
+  if (s.sensi_y != null) text += `Sensi Y: ${s.sensi_y}\n`;
+  text += `\nGerado em FF Sensi Pro`;
+
+  if (navigator.share) {
+    navigator.share({ title: 'FF Sensi Pro', text, url: location.href }).catch(() => {});
+  } else {
+    toast("Compartilhamento não disponível neste navegador");
+  }
+}
+
 // ─── Exportar ──────────────────────────────────────────────────────
 function exportar() {
   if (!currentResults) return;
+  haptic('light');
   const r = currentResults;
   const s = r.sensitivities;
   const fp = `sensibilidade_ff_${new Date().toISOString().slice(0,10)}.txt`;
@@ -1056,7 +1200,7 @@ function exportar() {
     `  FPS         : ${r.fps}`,
     `  Dedos       : ${r.fingers}`,
     `  Estilo      : ${r.style}`,
-    `  Data        : ${new Date().toLocaleString("pt-BR")}`,
+    `  Data        : ${new Date().toLocaleString("pt-BR")}${r.youtuber ? `\n  YouTuber    : ${r.youtuber}` : ""}`,
     "",
     "\u2500".repeat(48),
     "",
@@ -1133,8 +1277,10 @@ function exportar() {
 
 // ─── Limpar ────────────────────────────────────────────────────────
 function limpar() {
+  haptic('heavy');
   currentResults = null;
   document.getElementById("resultsCard").classList.add("hidden");
+  document.getElementById('youtuber').value = "";
 }
 
 // ─── Hist\u00f3rico ──────────────────────────────────────────────────────
@@ -1156,9 +1302,70 @@ function renderHistorico() {
   }).join("");
 }
 
-// ─── Service Worker ───────────────────────────────────────────────
+// ─── Service Worker (auto-update) ─────────────────────────────────
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
+  let refreshing = false;
+
+  // Auto-reload when a new SW takes over
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!refreshing) { refreshing = true; location.reload(); }
+  });
+
+  // Listen for "reload" commands from the SW
+  navigator.serviceWorker.addEventListener('message', e => {
+    if (e.data === 'NEW_VERSION' && !refreshing) {
+      refreshing = true;
+      location.reload();
+    }
+  });
+
+  // Register with version param to bypass HTTP cache
+  const SW_URL = 'sw.js?v=' + new Date().toISOString().slice(0,10).replace(/-/g,'');
+  navigator.serviceWorker.register(SW_URL).then(reg => {
+    // Periodically check for updates (every 30 min)
+    setInterval(() => reg.update(), 30 * 60 * 1000);
+    // Also check on visibility change (user returns to app)
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) reg.update();
+    });
+
+    // Show banner when update is ready (fallback for when auto-reload doesn't fire)
+    reg.addEventListener('updatefound', () => {
+      const newSW = reg.installing;
+      if (!newSW) return;
+      newSW.addEventListener('statechange', () => {
+        if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+          const div = document.createElement('div');
+          div.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:var(--accent);color:#fff;text-align:center;padding:12px 16px;font-size:14px;font-weight:600;cursor:pointer;padding-top:calc(12px + env(safe-area-inset-top,0))';
+          div.textContent = 'Nova versão disponível. Toque para atualizar.';
+          div.onclick = () => { newSW.postMessage('SKIP_WAITING'); };
+          document.body.prepend(div);
+        }
+      });
+    });
+  }).catch(() => {});
+}
+
+// ─── Version check (extra safety net) ────────────────────────────
+fetch('version.json?' + Date.now()).then(r => r.json()).then(data => {
+  const local = localStorage.getItem('ffsensi_version');
+  if (local && data.version !== parseInt(local) && 'serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(regs => {
+      regs.forEach(reg => reg.update());
+    });
+  }
+  localStorage.setItem('ffsensi_version', data.version);
+}).catch(() => {});
+
+// ─── Hide share button if unsupported ────────────────────────────
+if (!navigator.share) {
+  const sb = document.getElementById('shareBtn');
+  if (sb) sb.classList.add('hidden');
+}
+
+// ─── iOS standalone mode ─────────────────────────────────────────
+if (window.navigator.standalone) {
+  document.documentElement.classList.add('ios-standalone');
 }
 
 // ─── Init ──────────────────────────────────────────────────────────
