@@ -253,6 +253,21 @@
   .ios-standalone body { cursor: default; }
   .ios-standalone .btn:active { opacity: 0.8; }
 
+  /* Multi-sensi table */
+  .sens-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 -4px; }
+  .sens-table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 400px; }
+  .sens-table th {
+    background: var(--card2); padding: 7px 5px; text-align: center;
+    font-weight: 700; color: var(--accent); font-size: 11px;
+    border-bottom: 2px solid rgba(74,125,255,0.15);
+    position: sticky; top: 0;
+  }
+  .sens-table td { padding: 5px; text-align: center; border-bottom: 1px solid rgba(74,125,255,0.06); }
+  .sens-td-label { text-align: left !important; font-weight: 600; color: var(--text2); font-size: 12px; white-space: nowrap; padding-left: 8px !important; }
+  .sens-td-value { font-weight: 700; color: var(--text); font-size: 14px; }
+  .sens-td-value.high { color: var(--green); }
+  .sens-td-value.low { color: var(--red); }
+
   /* Responsive touch */
   @media (prefers-color-scheme: light) {
     :root {
@@ -675,6 +690,15 @@ const STYLE_F = {
   Misto:  {"geral":1.00,"red_dot":1.00,"mira_2x":1.00,"mira_4x":1.00,"awm":1.00,"olhadinha":1.00,"disparo":1.00},
 };
 
+const VARIANT_PROFILES = [
+  {label:"Equilibrada",fatores:{"geral":1.00,"red_dot":1.00,"mira_2x":1.00,"mira_4x":1.00,"awm":1.00,"olhadinha":1.00,"disparo":1.00},dpiOff:0},
+  {label:"R\u00e1pida",    fatores:{"geral":1.12,"red_dot":1.10,"mira_2x":1.04,"mira_4x":0.88,"awm":0.82,"olhadinha":1.08,"disparo":1.10},dpiOff:15},
+  {label:"Precisa",   fatores:{"geral":0.90,"red_dot":0.92,"mira_2x":1.00,"mira_4x":1.08,"awm":1.12,"olhadinha":0.92,"disparo":0.90},dpiOff:-12},
+  {label:"Rush",      fatores:{"geral":1.08,"red_dot":1.12,"mira_2x":0.96,"mira_4x":0.84,"awm":0.78,"olhadinha":1.12,"disparo":1.14},dpiOff:20},
+  {label:"Sniper",    fatores:{"geral":0.88,"red_dot":0.88,"mira_2x":0.95,"mira_4x":1.12,"awm":1.20,"olhadinha":0.88,"disparo":0.88},dpiOff:-18},
+  {label:"M\u00e9dia",     fatores:{"geral":1.04,"red_dot":1.02,"mira_2x":1.00,"mira_4x":0.96,"awm":0.94,"olhadinha":1.02,"disparo":1.04},dpiOff:5},
+];
+
 const HUD = {
   2: ["HUD B\u00e1sico \u2013 2 Dedos","\u2022 Tiro: canto inferior direito","\u2022 Mira: canto superior esquerdo","\u2022 Joystick: canto inferior esquerdo","\u2022 Pular/Recarregar: lado direito","\u2022 Bot\u00f5es: Grande","\u2022 Transpar\u00eancia: 50%","\u2022 Layout: Padr\u00e3o"],
   3: ["HUD Intermedi\u00e1rio \u2013 3 Dedos","\u2022 Tiro: canto superior direito","\u2022 Mira: canto inferior direito","\u2022 Joystick: canto inferior esquerdo","\u2022 Scope: canto superior esquerdo","\u2022 Pular: lado direito","\u2022 Bot\u00f5es: M\u00e9dio","\u2022 Transpar\u00eancia: 40%","\u2022 Layout: 3 dedos"],
@@ -798,7 +822,7 @@ document.getElementById("brand").addEventListener("change", function() {
 });
 
 // ─── Basic Calculation ─────────────────────────────────────────────
-function calcular(device, model, fps, fingers, style) {
+function calcular(device, model, fps, fingers, style, profile) {
   const isEmu = device === "Emulador";
   const isMob = device === "Mobilador";
   const isX86 = device === "FF_x86";
@@ -806,46 +830,47 @@ function calcular(device, model, fps, fingers, style) {
   const fpsF = {30:1.20,60:1.00,90:0.88,120:0.78}[parseInt(fps)];
   const finF = {2:1.15,3:1.00,4:0.88,5:0.78}[parseInt(fingers)];
   const styF = STYLE_F[style];
+  const prf = VARIANT_PROFILES[profile] || VARIANT_PROFILES[0];
   let seed = 0; for (let i=0; i<model.length; i++) seed += model.charCodeAt(i);
   seed = (seed % 7) - 3;
   const off = seed * 0.4;
   const out = {};
-  for (const [k] of SENS_KEYS) { out[k] = Math.max(1, Math.min(100, Math.round(BASE_SENS[k] * devF * fpsF * finF * styF[k] + off))); }
+  for (const [k] of SENS_KEYS) { out[k] = Math.max(1, Math.min(100, Math.round(BASE_SENS[k] * devF * fpsF * finF * styF[k] * prf.fatores[k] + off))); }
   if (isX86) {
     const dpiBase = 480; const dpiFps = {30:0.94,60:1.00,90:1.06,120:1.12}[parseInt(fps)];
     const dpiFin = {2:1.02,3:1.00,4:0.96,5:0.92}[parseInt(fingers)];
     const dpiSty = {Capa:1.06,Rush:1.04,Suporte:0.94,Misto:1.00}[style];
-    out.dpi = Math.max(320, Math.min(800, Math.round(dpiBase * dpiFps * dpiFin * dpiSty + seed * 5)));
+    out.dpi = Math.max(320, Math.min(800, Math.round(dpiBase * dpiFps * dpiFin * dpiSty + seed * 5 + prf.dpiOff)));
   } else if (isEmu) { out.dpi = Math.max(320, Math.min(640, Math.round(380 + seed * 5)));
   } else if (isMob) {
     const dpiBase = 420; const dpiFps = {30:0.96,60:1.00,90:1.04,120:1.08}[parseInt(fps)];
     const dpiFin = {2:1.00,3:1.00,4:0.97,5:0.94}[parseInt(fingers)];
     const dpiSty = {Capa:1.06,Rush:1.04,Suporte:0.95,Misto:1.00}[style];
-    out.dpi = Math.max(320, Math.min(700, Math.round(dpiBase * dpiFps * dpiFin * dpiSty + seed * 5)));
+    out.dpi = Math.max(320, Math.min(700, Math.round(dpiBase * dpiFps * dpiFin * dpiSty + seed * 5 + prf.dpiOff)));
   } else {
     const dpiBase = device === "iPhone" ? 460 : 400; const dpiFps = {30:0.96,60:1.00,90:1.04,120:1.08}[parseInt(fps)];
     const dpiFin = {2:1.00,3:1.00,4:0.97,5:0.94}[parseInt(fingers)];
     const dpiSty = {Capa:1.06,Rush:1.04,Suporte:0.95,Misto:1.00}[style];
-    out.dpi = Math.max(320, Math.min(640, Math.round(dpiBase * dpiFps * dpiFin * dpiSty + seed * 5)));
+    out.dpi = Math.max(320, Math.min(640, Math.round(dpiBase * dpiFps * dpiFin * dpiSty + seed * 5 + prf.dpiOff)));
   }
   if (isX86) {
     const fpsI = parseInt(fps); const fpsX86 = {30:0.90,60:1.00,90:1.08,120:1.14}[fpsI];
     const finX86 = {2:1.12,3:1.00,4:0.90,5:0.82}[parseInt(fingers)];
     const xf = FF_X86_SENSI_X[model] || 1.0; const yf = FF_X86_SENSI_Y[model] || 0.95;
-    out.sensi_x = Math.max(1, Math.min(100, Math.round(58 * fpsX86 * finX86 * styF.geral * xf + off)));
-    out.sensi_y = Math.max(1, Math.min(100, Math.round(48 * fpsX86 * finX86 * styF.geral * yf + off)));
+    out.sensi_x = Math.max(1, Math.min(100, Math.round(58 * fpsX86 * finX86 * styF.geral * xf * prf.fatores.geral + off)));
+    out.sensi_y = Math.max(1, Math.min(100, Math.round(48 * fpsX86 * finX86 * styF.geral * yf * prf.fatores.geral + off)));
   } else if (isEmu) {
     const fpsI = parseInt(fps); const fpsEmu = {30:0.92,60:1.00,90:1.06,120:1.10}[fpsI];
     const finEmu = {2:1.10,3:1.00,4:0.92,5:0.85}[parseInt(fingers)];
     const xf = EMULATOR_SENSI_X[model] || 1.0; const yf = EMULATOR_SENSI_Y[model] || 0.95;
-    out.sensi_x = Math.max(1, Math.min(100, Math.round(55 * fpsEmu * finEmu * styF.geral * xf + off)));
-    out.sensi_y = Math.max(1, Math.min(100, Math.round(45 * fpsEmu * finEmu * styF.geral * yf + off)));
+    out.sensi_x = Math.max(1, Math.min(100, Math.round(55 * fpsEmu * finEmu * styF.geral * xf * prf.fatores.geral + off)));
+    out.sensi_y = Math.max(1, Math.min(100, Math.round(45 * fpsEmu * finEmu * styF.geral * yf * prf.fatores.geral + off)));
   } else if (isMob) {
     const fpsI = parseInt(fps); const fpsMob = {30:0.94,60:1.00,90:1.04,120:1.08}[fpsI];
     const finMob = {2:1.08,3:1.00,4:0.94,5:0.88}[parseInt(fingers)];
     const xf = MOBILADOR_SENSI_X[model] || 0.98; const yf = MOBILADOR_SENSI_Y[model] || 0.93;
-    out.sensi_x = Math.max(1, Math.min(100, Math.round(50 * fpsMob * finMob * styF.geral * xf + off)));
-    out.sensi_y = Math.max(1, Math.min(100, Math.round(42 * fpsMob * finMob * styF.geral * yf + off)));
+    out.sensi_x = Math.max(1, Math.min(100, Math.round(50 * fpsMob * finMob * styF.geral * xf * prf.fatores.geral + off)));
+    out.sensi_y = Math.max(1, Math.min(100, Math.round(42 * fpsMob * finMob * styF.geral * yf * prf.fatores.geral + off)));
   } else { out.sensi_x = null; out.sensi_y = null; }
   return out;
 }
@@ -1021,78 +1046,154 @@ function gerar() {
 
   // YouTuber theme overrides everything
   const tema = aplicarTemaYoutuber(youtuber);
-  const results = tema || (isAdvanced ? calcularAvancado(device, model, fps, fingers, style, {
-    mouseDpi: document.getElementById('mouse-dpi').value,
-    resolution: document.getElementById('resolution').value,
-    refreshRate: document.getElementById('refresh-rate').value,
-    pollingRate: document.getElementById('polling-rate').value,
-    skillLevel: document.getElementById('skill-level').value,
-    priority: document.getElementById('priority').value,
-  }) : calcular(device, model, fps, fingers, style));
 
-  currentResults = { device, model, fps, fingers, style, youtuber: youtuber || null, sensitivities: results, timestamp: now() };
+  if (tema || isAdvanced) {
+    const results = tema || calcularAvancado(device, model, fps, fingers, style, {
+      mouseDpi: document.getElementById('mouse-dpi').value,
+      resolution: document.getElementById('resolution').value,
+      refreshRate: document.getElementById('refresh-rate').value,
+      pollingRate: document.getElementById('polling-rate').value,
+      skillLevel: document.getElementById('skill-level').value,
+      priority: document.getElementById('priority').value,
+    });
+    currentResults = { device, model, fps, fingers, style, youtuber: youtuber || null, sensitivities: results, timestamp: now() };
 
-  // Display
+    const list = document.getElementById("sensList");
+    const isEmu = device === "Emulador";
+    const isMob = device === "Mobilador";
+    const isX86 = device === "FF_x86";
+    const isTema = !!results._youtuber;
+    let html = "";
+    if (isTema) {
+      html += `<div style="text-align:center;padding:8px 0 12px;font-weight:600;color:var(--accent);font-size:14px">Tema: ${results._youtuber}</div>`;
+    }
+    for (const [k,dn] of SENS_KEYS) {
+      const v = results[k];
+      const pct = Math.min(100, Math.max(0, v < 100 ? v : ((v - 320) / 3.2)));
+      html += `<div class="sens-item"><span class="sens-label">${dn}</span><div class="sens-bar-wrap"><div class="sens-bar" style="width:${v < 200 ? v : ((v-320)/3.2)}%"></div></div><span class="sens-value">${v}</span></div>`;
+    }
+    const dpiPct = Math.min(100, Math.max(0, results.dpi < 100 ? results.dpi : ((results.dpi - 320) / 3.2)));
+    html += `<div class="sens-item"><span class="sens-label">DPI</span><div class="sens-bar-wrap"><div class="sens-bar dpi" style="width:${results.dpi < 200 ? results.dpi : ((results.dpi-320)/3.2)}%"></div></div><span class="sens-value">${results.dpi}</span></div>`;
+    if (!isTema && (isEmu || isMob || isX86)) {
+      if (results.sensi_x != null) {
+        html += `<div class="sens-item"><span class="sens-label">Sensi X</span><div class="sens-bar-wrap"><div class="sens-bar emu" style="width:${results.sensi_x < 200 ? results.sensi_x : ((results.sensi_x-320)/3.2)}%"></div></div><span class="sens-value">${results.sensi_x}</span></div>`;
+      }
+      if (results.sensi_y != null) {
+        html += `<div class="sens-item"><span class="sens-label">Sensi Y</span><div class="sens-bar-wrap"><div class="sens-bar emu" style="width:${results.sensi_y < 200 ? results.sensi_y : ((results.sensi_y-320)/3.2)}%"></div></div><span class="sens-value">${results.sensi_y}</span></div>`;
+      }
+    }
+    list.innerHTML = html;
+
+    // Confidence & Explanation
+    const confArea = document.getElementById("confidence-area");
+    const explArea = document.getElementById("explanation-area");
+    const suggestDiv = document.getElementById("suggest-divider");
+    const suggestArea = document.getElementById("suggest-area");
+    if ((isAdvanced || isTema) && results._confidence != null) {
+      confArea.classList.remove("hidden");
+      const conf = results._confidence;
+      document.getElementById("confFill").style.width = conf + "%";
+      document.getElementById("confFill").style.background = conf >= 80 ? "#34c759" : (conf >= 60 ? "#ff9f0a" : "#ff3b30");
+      document.getElementById("confText").textContent = "Confian\u00e7a: " + conf + "%";
+      explArea.classList.remove("hidden");
+      document.getElementById("explanationText").textContent = results._explanation || "";
+
+      const mouseDpi = parseInt(document.getElementById('mouse-dpi').value);
+      const hz = parseInt(document.getElementById('refresh-rate').value);
+      const hasMouseVal = isEmu || isMob || isX86;
+      if (hasMouseVal && mouseDpi < 800 && hz >= 120) {
+        suggestDiv.classList.remove("hidden");
+        suggestArea.classList.remove("hidden");
+        document.getElementById("suggestText").textContent =
+          "Sugest\u00e3o: aumentar DPI do mouse para 800-1600 com Hz alto permite maior precis\u00e3o sem perder velocidade.";
+      } else if (hasMouseVal && mouseDpi > 2000) {
+        suggestDiv.classList.remove("hidden");
+        suggestArea.classList.remove("hidden");
+        document.getElementById("suggestText").textContent =
+          "Sugest\u00e3o: DPI muito alto ("+mouseDpi+"). Considere reduzir para 800-1600 e ajustar a sensibilidade no jogo para mais controle.";
+      } else {
+        suggestDiv.classList.add("hidden");
+        suggestArea.classList.add("hidden");
+      }
+    } else {
+      confArea.classList.add("hidden");
+      explArea.classList.add("hidden");
+      suggestDiv.classList.add("hidden");
+      suggestArea.classList.add("hidden");
+    }
+
+    // HUD
+    const hudDiv = document.getElementById("hudText");
+    if (isX86) {
+      hudDiv.textContent = "HUD Free Fire x86 (Nativo PC)\n\n\u2022 WASD: movimenta\u00e7\u00e3o\n\u2022 Mouse: mira (Sensi X/Y)\n\u2022 Clique esquerdo: atirar\n\u2022 Clique direito: mirar\n\u2022 R: recarregar\n\u2022 Shift: correr\n\u2022 Espa\u00e7o: pular\n\u2022 1-5: trocar armas\n\u2022 B: mochila\n\u2022 M: mapa\n\u2022 Use o cliente nativo Free Fire x86";
+    } else if (isEmu) {
+      hudDiv.textContent = "HUD para Emulador\n\n\u2022 Mapeie os controles no emulador\n\u2022 WASD: movimenta\u00e7\u00e3o\n\u2022 Mouse: mira (Sensi X/Y)\n\u2022 Clique esquerdo: atirar\n\u2022 Clique direito: mirar\n\u2022 R: recarregar\n\u2022 Shift: correr\n\u2022 Espa\u00e7o: pular\n\u2022 Ajuste no Gameloop / BlueStacks / LDPlayer";
+    } else if (isMob) {
+      hudDiv.textContent = "HUD Mobilador - Teclado e Mouse\n\n\u2022 Conecte teclado+mouse via OTG ou BT\n\u2022 WASD: movimenta\u00e7\u00e3o\n\u2022 Mouse: mira (Sensi X/Y)\n\u2022 Clique esquerdo: atirar\n\u2022 Clique direito: mirar\n\u2022 R: recarregar\n\u2022 Shift: correr\n\u2022 Espa\u00e7o: pular\n\u2022 Use GG Mouse Pro 2 / Panda Mouse / Octopus";
+    } else {
+      const f = parseInt(fingers);
+      const h = HUD[f] || HUD[4];
+      hudDiv.textContent = "\u2605 " + h[0] + "\n\n" + h.slice(1).join("\n");
+    }
+
+    document.getElementById("resultsCard").classList.remove("hidden");
+    salvarHistorico(currentResults);
+    toast("Sensibilidade gerada!");
+    return;
+  }
+
+  // Basic mode - generate 6 variants
+  const allResults = [];
+  for (let i = 0; i < VARIANT_PROFILES.length; i++) {
+    allResults.push(calcular(device, model, fps, fingers, style, i));
+  }
+  currentResults = { device, model, fps, fingers, style, allResults, timestamp: now() };
+
   const list = document.getElementById("sensList");
   const isEmu = device === "Emulador";
   const isMob = device === "Mobilador";
   const isX86 = device === "FF_x86";
-  const isTema = !!results._youtuber;
-  let html = "";
-  if (isTema) {
-    html += `<div style="text-align:center;padding:8px 0 12px;font-weight:600;color:var(--accent);font-size:14px">Tema: ${results._youtuber}</div>`;
+
+  let html = '<div class="sens-table-wrap"><table class="sens-table">';
+  html += '<tr><th>Sensi</th>';
+  for (let i = 0; i < allResults.length; i++) {
+    html += `<th>${VARIANT_PROFILES[i].label}</th>`;
   }
+  html += '</tr>';
   for (const [k,dn] of SENS_KEYS) {
-    const v = results[k];
-    html += sensRow(dn, v, "");
+    html += `<tr><td class="sens-td-label">${dn}</td>`;
+    for (const r of allResults) {
+      const cls = r[k] >= 60 ? 'high' : (r[k] <= 20 ? 'low' : '');
+      html += `<td class="sens-td-value ${cls}">${r[k]}</td>`;
+    }
+    html += '</tr>';
   }
-  html += sensRow("DPI", results.dpi, "dpi");
-  if (!isTema && (isEmu || isMob || isX86)) {
-    if (results.sensi_x != null) html += sensRow("Sensi X", results.sensi_x, "emu");
-    if (results.sensi_y != null) html += sensRow("Sensi Y", results.sensi_y, "emu");
+  html += `<tr><td class="sens-td-label">DPI</td>`;
+  for (const r of allResults) {
+    const cls = r.dpi >= 500 ? 'high' : (r.dpi <= 360 ? 'low' : '');
+    html += `<td class="sens-td-value ${cls}">${r.dpi}</td>`;
   }
+  html += '</tr>';
+  if (isEmu || isMob || isX86) {
+    html += `<tr><td class="sens-td-label">Sensi X</td>`;
+    for (const r of allResults) {
+      html += `<td class="sens-td-value">${r.sensi_x != null ? r.sensi_x : '-'}</td>`;
+    }
+    html += '</tr>';
+    html += `<tr><td class="sens-td-label">Sensi Y</td>`;
+    for (const r of allResults) {
+      html += `<td class="sens-td-value">${r.sensi_y != null ? r.sensi_y : '-'}</td>`;
+    }
+    html += '</tr>';
+  }
+  html += '</table></div>';
   list.innerHTML = html;
 
-  // Confidence & Explanation
-  const confArea = document.getElementById("confidence-area");
-  const explArea = document.getElementById("explanation-area");
-  const suggestDiv = document.getElementById("suggest-divider");
-  const suggestArea = document.getElementById("suggest-area");
-  if ((isAdvanced || isTema) && results._confidence != null) {
-    confArea.classList.remove("hidden");
-    const conf = results._confidence;
-    document.getElementById("confFill").style.width = conf + "%";
-    document.getElementById("confFill").style.background = conf >= 80 ? "#34c759" : (conf >= 60 ? "#ff9f0a" : "#ff3b30");
-    document.getElementById("confText").textContent = "Confian\u00e7a: " + conf + "%";
-    explArea.classList.remove("hidden");
-    document.getElementById("explanationText").textContent = results._explanation || "";
+  document.getElementById("confidence-area").classList.add("hidden");
+  document.getElementById("explanation-area").classList.add("hidden");
+  document.getElementById("suggest-divider").classList.add("hidden");
+  document.getElementById("suggest-area").classList.add("hidden");
 
-    // Suggestions
-    const mouseDpi = parseInt(document.getElementById('mouse-dpi').value);
-    const hz = parseInt(document.getElementById('refresh-rate').value);
-    const hasMouseVal = isEmu || isMob || isX86;
-    if (hasMouseVal && mouseDpi < 800 && hz >= 120) {
-      suggestDiv.classList.remove("hidden");
-      suggestArea.classList.remove("hidden");
-      document.getElementById("suggestText").textContent =
-        "Sugest\u00e3o: aumentar DPI do mouse para 800-1600 com Hz alto permite maior precis\u00e3o sem perder velocidade.";
-    } else if (hasMouseVal && mouseDpi > 2000) {
-      suggestDiv.classList.remove("hidden");
-      suggestArea.classList.remove("hidden");
-      document.getElementById("suggestText").textContent =
-        "Sugest\u00e3o: DPI muito alto ("+mouseDpi+"). Considere reduzir para 800-1600 e ajustar a sensibilidade no jogo para mais controle.";
-    } else {
-      suggestDiv.classList.add("hidden");
-      suggestArea.classList.add("hidden");
-    }
-  } else {
-    confArea.classList.add("hidden");
-    explArea.classList.add("hidden");
-    suggestDiv.classList.add("hidden");
-    suggestArea.classList.add("hidden");
-  }
-
-  // HUD
   const hudDiv = document.getElementById("hudText");
   if (isX86) {
     hudDiv.textContent = "HUD Free Fire x86 (Nativo PC)\n\n\u2022 WASD: movimenta\u00e7\u00e3o\n\u2022 Mouse: mira (Sensi X/Y)\n\u2022 Clique esquerdo: atirar\n\u2022 Clique direito: mirar\n\u2022 R: recarregar\n\u2022 Shift: correr\n\u2022 Espa\u00e7o: pular\n\u2022 1-5: trocar armas\n\u2022 B: mochila\n\u2022 M: mapa\n\u2022 Use o cliente nativo Free Fire x86";
@@ -1108,12 +1209,7 @@ function gerar() {
 
   document.getElementById("resultsCard").classList.remove("hidden");
   salvarHistorico(currentResults);
-  toast("Sensibilidade gerada!");
-}
-
-function sensRow(label, value, cls) {
-  const pct = Math.min(100, Math.max(0, value < 100 ? value : ((value - 320) / 3.2)));
-  return `<div class="sens-item"><span class="sens-label">${label}</span><div class="sens-bar-wrap"><div class="sens-bar ${cls}" style="width:${value < 200 ? value : ((value-320)/3.2)}%"></div></div><span class="sens-value">${value}</span></div>`;
+  toast("6 op\u00e7\u00f5es geradas!");
 }
 
 // ─── Copiar ────────────────────────────────────────────────────────
@@ -1121,20 +1217,44 @@ function copiar() {
   if (!currentResults) return;
   haptic('light');
   const r = currentResults;
-  const s = r.sensitivities;
-  let lines = [
-    `=== FF Sensi Pro \u2014 Sensibilidades Geradas ===`,
-    `Data: ${new Date().toLocaleString("pt-BR")}`,
-    `Dispositivo: ${r.device}  |  Modelo: ${r.model}`,
-    `FPS: ${r.fps}  |  Dedos: ${r.fingers}  |  Estilo: ${r.style}${r.youtuber ? `  |  Tema: ${r.youtuber}` : ""}`,
-    "\u2500".repeat(40),
-  ];
-  for (const [k,dn] of SENS_KEYS) lines.push(`  ${dn.padEnd(12)}: ${s[k].toString().padStart(3)}`);
-  lines.push(`  ${"DPI".padEnd(12)}: ${s.dpi.toString().padStart(3)}`);
-  if (s.sensi_x != null) lines.push(`  ${"Sensi X".padEnd(12)}: ${s.sensi_x.toString().padStart(3)}`);
-  if (s.sensi_y != null) lines.push(`  ${"Sensi Y".padEnd(12)}: ${s.sensi_y.toString().padStart(3)}`);
-  lines.push("\u2500".repeat(40));
-  lines.push("Sensibilidades recomendadas \u2014 sem v\u00ednculo oficial com Free Fire.");
+  let lines;
+
+  if (r.allResults) {
+    lines = [
+      `=== FF Sensi Pro \u2014 Sensibilidades Geradas ===`,
+      `Data: ${new Date().toLocaleString("pt-BR")}`,
+      `Dispositivo: ${r.device}  |  Modelo: ${r.model}`,
+      `FPS: ${r.fps}  |  Dedos: ${r.fingers}  |  Estilo: ${r.style}`,
+      "",
+    ];
+    for (let i = 0; i < r.allResults.length; i++) {
+      const s = r.allResults[i];
+      const name = VARIANT_PROFILES[i].label;
+      lines.push(`\u2500 ${name} \u2500`.padEnd(40, "\u2500"));
+      for (const [k,dn] of SENS_KEYS) lines.push(`  ${dn.padEnd(12)}: ${s[k].toString().padStart(3)}`);
+      lines.push(`  ${"DPI".padEnd(12)}: ${s.dpi.toString().padStart(3)}`);
+      if (s.sensi_x != null) lines.push(`  ${"Sensi X".padEnd(12)}: ${s.sensi_x.toString().padStart(3)}`);
+      if (s.sensi_y != null) lines.push(`  ${"Sensi Y".padEnd(12)}: ${s.sensi_y.toString().padStart(3)}`);
+      lines.push("");
+    }
+    lines.push("\u2500".repeat(40));
+    lines.push("Sensibilidades recomendadas \u2014 sem v\u00ednculo oficial com Free Fire.");
+  } else {
+    const s = r.sensitivities;
+    lines = [
+      `=== FF Sensi Pro \u2014 Sensibilidades Geradas ===`,
+      `Data: ${new Date().toLocaleString("pt-BR")}`,
+      `Dispositivo: ${r.device}  |  Modelo: ${r.model}`,
+      `FPS: ${r.fps}  |  Dedos: ${r.fingers}  |  Estilo: ${r.style}${r.youtuber ? `  |  Tema: ${r.youtuber}` : ""}`,
+      "\u2500".repeat(40),
+    ];
+    for (const [k,dn] of SENS_KEYS) lines.push(`  ${dn.padEnd(12)}: ${s[k].toString().padStart(3)}`);
+    lines.push(`  ${"DPI".padEnd(12)}: ${s.dpi.toString().padStart(3)}`);
+    if (s.sensi_x != null) lines.push(`  ${"Sensi X".padEnd(12)}: ${s.sensi_x.toString().padStart(3)}`);
+    if (s.sensi_y != null) lines.push(`  ${"Sensi Y".padEnd(12)}: ${s.sensi_y.toString().padStart(3)}`);
+    lines.push("\u2500".repeat(40));
+    lines.push("Sensibilidades recomendadas \u2014 sem v\u00ednculo oficial com Free Fire.");
+  }
 
   const text = lines.join("\n");
   if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -1187,7 +1307,6 @@ function exportar() {
   if (!currentResults) return;
   haptic('light');
   const r = currentResults;
-  const s = r.sensitivities;
   const fp = `sensibilidade_ff_${new Date().toISOString().slice(0,10)}.txt`;
 
   let lines = [
@@ -1203,23 +1322,53 @@ function exportar() {
     `  Estilo      : ${r.style}`,
     `  Data        : ${new Date().toLocaleString("pt-BR")}${r.youtuber ? `\n  YouTuber    : ${r.youtuber}` : ""}`,
     "",
-    "\u2500".repeat(48),
-    "",
   ];
-  for (const [k,dn] of SENS_KEYS) {
-    const v = s[k];
-    const bar = "\u2588".repeat(Math.floor(v/2)) + "\u2592".repeat(50-Math.floor(v/2));
-    lines.push(`  ${dn.padEnd(12)}: ${v.toString().padStart(3)}  ${bar}`);
-  }
-  let dpiBar = "\u2588".repeat(Math.floor((s.dpi-300)/7)) + "\u2592".repeat(50-Math.floor((s.dpi-300)/7));
-  lines.push(`  ${"DPI".padEnd(12)}: ${s.dpi.toString().padStart(3)}  ${dpiBar}`);
-  if (s.sensi_x != null) {
-    let xb = "\u2588".repeat(Math.floor(s.sensi_x/2)) + "\u2592".repeat(50-Math.floor(s.sensi_x/2));
-    lines.push(`  ${"Sensi X".padEnd(12)}: ${s.sensi_x.toString().padStart(3)}  ${xb}`);
-  }
-  if (s.sensi_y != null) {
-    let yb = "\u2588".repeat(Math.floor(s.sensi_y/2)) + "\u2592".repeat(50-Math.floor(s.sensi_y/2));
-    lines.push(`  ${"Sensi Y".padEnd(12)}: ${s.sensi_y.toString().padStart(3)}  ${yb}`);
+
+  if (r.allResults) {
+    for (let i = 0; i < r.allResults.length; i++) {
+      const s = r.allResults[i];
+      const name = VARIANT_PROFILES[i].label;
+      lines.push("\u2500".repeat(48));
+      lines.push(`  >>> ${name} <<<`);
+      lines.push("\u2500".repeat(48));
+      lines.push("");
+      for (const [k,dn] of SENS_KEYS) {
+        const v = s[k];
+        const bar = "\u2588".repeat(Math.floor(v/2)) + "\u2592".repeat(50-Math.floor(v/2));
+        lines.push(`  ${dn.padEnd(12)}: ${v.toString().padStart(3)}  ${bar}`);
+      }
+      let dpiBar = "\u2588".repeat(Math.floor((s.dpi-300)/7)) + "\u2592".repeat(50-Math.floor((s.dpi-300)/7));
+      lines.push(`  ${"DPI".padEnd(12)}: ${s.dpi.toString().padStart(3)}  ${dpiBar}`);
+      if (s.sensi_x != null) {
+        let xb = "\u2588".repeat(Math.floor(s.sensi_x/2)) + "\u2592".repeat(50-Math.floor(s.sensi_x/2));
+        lines.push(`  ${"Sensi X".padEnd(12)}: ${s.sensi_x.toString().padStart(3)}  ${xb}`);
+      }
+      if (s.sensi_y != null) {
+        let yb = "\u2588".repeat(Math.floor(s.sensi_y/2)) + "\u2592".repeat(50-Math.floor(s.sensi_y/2));
+        lines.push(`  ${"Sensi Y".padEnd(12)}: ${s.sensi_y.toString().padStart(3)}  ${yb}`);
+      }
+      lines.push("");
+    }
+  } else {
+    const s = r.sensitivities;
+    lines.push("\u2500".repeat(48));
+    lines.push("");
+    for (const [k,dn] of SENS_KEYS) {
+      const v = s[k];
+      const bar = "\u2588".repeat(Math.floor(v/2)) + "\u2592".repeat(50-Math.floor(v/2));
+      lines.push(`  ${dn.padEnd(12)}: ${v.toString().padStart(3)}  ${bar}`);
+    }
+    let dpiBar = "\u2588".repeat(Math.floor((s.dpi-300)/7)) + "\u2592".repeat(50-Math.floor((s.dpi-300)/7));
+    lines.push(`  ${"DPI".padEnd(12)}: ${s.dpi.toString().padStart(3)}  ${dpiBar}`);
+    if (s.sensi_x != null) {
+      let xb = "\u2588".repeat(Math.floor(s.sensi_x/2)) + "\u2592".repeat(50-Math.floor(s.sensi_x/2));
+      lines.push(`  ${"Sensi X".padEnd(12)}: ${s.sensi_x.toString().padStart(3)}  ${xb}`);
+    }
+    if (s.sensi_y != null) {
+      let yb = "\u2588".repeat(Math.floor(s.sensi_y/2)) + "\u2592".repeat(50-Math.floor(s.sensi_y/2));
+      lines.push(`  ${"Sensi Y".padEnd(12)}: ${s.sensi_y.toString().padStart(3)}  ${yb}`);
+    }
+    lines.push("");
   }
 
   const fid = parseInt(r.fingers);
