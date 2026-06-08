@@ -269,6 +269,16 @@
   .sens-td-value.low { color: var(--red); }
 
   /* Responsive touch */
+  .sens-compact { max-height: 420px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .sens-crow { display: flex; align-items: center; padding: 4px 2px; border-bottom: 1px solid rgba(74,125,255,0.05); gap: 3px; }
+  .sens-cname { font-size: 9px; font-weight: 700; color: var(--accent); width: 52px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .sens-cvals { display: flex; gap: 1px; flex-wrap: wrap; }
+  .sens-cv { font-size: 9px; font-weight: 600; color: var(--text); background: var(--card2); padding: 1px 3px; border-radius: 2px; min-width: 16px; text-align: center; }
+  .sens-cv.dpi { background: rgba(90,141,255,0.12); color: #6b9dff; }
+  .sens-cv.emu { background: rgba(124,77,255,0.12); color: #9b6dff; }
+  .sens-cv.high { color: var(--green); }
+  .sens-cv.low { color: var(--red); }
+
   @media (prefers-color-scheme: light) {
     :root {
       --bg: #f0f2f8;
@@ -664,11 +674,12 @@ const MOBILADOR_SENSI_X = {"GG Mouse Pro 2 (Padrão)":0.98,"Panda Mouse":1.02,"O
 const MOBILADOR_SENSI_Y = {"GG Mouse Pro 2 (Padrão)":0.92,"Panda Mouse":0.94,"Octopus":0.90,"Mouse + Teclado OTG":0.93,"Teclado + Mouse Bluetooth":0.91};
 
 const FF_X86_TYPES = [
-  "PC Baixo (4GB RAM)","PC Médio (8GB RAM)","PC Alto (16GB RAM)",
-  "PC Gamer (32GB RAM)","Notebook Básico","Notebook Gamer",
+  "PC Gamer (Alto)","PC Gamer (Médio)","PC Gamer (Baixo)",
+  "Notebook Gamer","PC Escritório","PC Qualquer",
 ];
-const FF_X86_SENSI_X = {"PC Baixo (4GB RAM)":1.02,"PC Médio (8GB RAM)":1.00,"PC Alto (16GB RAM)":0.98,"PC Gamer (32GB RAM)":0.96,"Notebook Básico":1.04,"Notebook Gamer":0.97};
-const FF_X86_SENSI_Y = {"PC Baixo (4GB RAM)":0.97,"PC Médio (8GB RAM)":0.95,"PC Alto (16GB RAM)":0.92,"PC Gamer (32GB RAM)":0.90,"Notebook Básico":0.99,"Notebook Gamer":0.91};
+
+const FF_X86_SENSI_X = {"PC Gamer (Alto)":1.04,"PC Gamer (Médio)":1.00,"PC Gamer (Baixo)":0.96,"Notebook Gamer":0.98,"PC Escritório":0.92,"PC Qualquer":0.90};
+const FF_X86_SENSI_Y = {"PC Gamer (Alto)":0.98,"PC Gamer (Médio)":0.95,"PC Gamer (Baixo)":0.92,"Notebook Gamer":0.93,"PC Escritório":0.88,"PC Qualquer":0.85};
 
 const BRAND_PREFIXES = [
   ["Samsung Galaxy","Samsung"],["Samsung","Samsung"],
@@ -690,14 +701,41 @@ const STYLE_F = {
   Misto:  {"geral":1.00,"red_dot":1.00,"mira_2x":1.00,"mira_4x":1.00,"awm":1.00,"olhadinha":1.00,"disparo":1.00},
 };
 
-const VARIANT_PROFILES = [
-  {label:"Equilibrada",fatores:{"geral":1.00,"red_dot":1.00,"mira_2x":1.00,"mira_4x":1.00,"awm":1.00,"olhadinha":1.00,"disparo":1.00},dpiOff:0},
-  {label:"R\u00e1pida",    fatores:{"geral":1.12,"red_dot":1.10,"mira_2x":1.04,"mira_4x":0.88,"awm":0.82,"olhadinha":1.08,"disparo":1.10},dpiOff:15},
-  {label:"Precisa",   fatores:{"geral":0.90,"red_dot":0.92,"mira_2x":1.00,"mira_4x":1.08,"awm":1.12,"olhadinha":0.92,"disparo":0.90},dpiOff:-12},
-  {label:"Rush",      fatores:{"geral":1.08,"red_dot":1.12,"mira_2x":0.96,"mira_4x":0.84,"awm":0.78,"olhadinha":1.12,"disparo":1.14},dpiOff:20},
-  {label:"Sniper",    fatores:{"geral":0.88,"red_dot":0.88,"mira_2x":0.95,"mira_4x":1.12,"awm":1.20,"olhadinha":0.88,"disparo":0.88},dpiOff:-18},
-  {label:"M\u00e9dia",     fatores:{"geral":1.04,"red_dot":1.02,"mira_2x":1.00,"mira_4x":0.96,"awm":0.94,"olhadinha":1.02,"disparo":1.04},dpiOff:5},
-];
+function gerarPerfis(device) {
+  const isEmu = device === "Emulador" || device === "FF_x86";
+  const isMob = device === "Mobilador";
+  const basePerfis = [
+    {label:"Equilibrada",fatores:{"geral":1.00,"red_dot":1.00,"mira_2x":1.00,"mira_4x":1.00,"awm":1.00,"olhadinha":1.00,"disparo":1.00},dpiOff:0},
+    {label:"Rápida",    fatores:{"geral":1.12,"red_dot":1.10,"mira_2x":1.04,"mira_4x":0.88,"awm":0.82,"olhadinha":1.08,"disparo":1.10},dpiOff:15},
+    {label:"Precisa",   fatores:{"geral":0.90,"red_dot":0.92,"mira_2x":1.00,"mira_4x":1.08,"awm":1.12,"olhadinha":0.92,"disparo":0.90},dpiOff:-12},
+    {label:"Rush",      fatores:{"geral":1.08,"red_dot":1.12,"mira_2x":0.96,"mira_4x":0.84,"awm":0.78,"olhadinha":1.12,"disparo":1.14},dpiOff:20},
+    {label:"Sniper",    fatores:{"geral":0.88,"red_dot":0.88,"mira_2x":0.95,"mira_4x":1.12,"awm":1.20,"olhadinha":0.88,"disparo":0.88},dpiOff:-18},
+    {label:"Média",     fatores:{"geral":1.04,"red_dot":1.02,"mira_2x":1.00,"mira_4x":0.96,"awm":0.94,"olhadinha":1.02,"disparo":1.04},dpiOff:5},
+  ];
+  const geradas = [
+    {label:"Fechada",   fatores:{"geral":0.94,"red_dot":0.96,"mira_2x":1.02,"mira_4x":1.04,"awm":1.06,"olhadinha":0.98,"disparo":0.94},dpiOff:-5},
+    {label:"Ágil",      fatores:{"geral":1.10,"red_dot":1.08,"mira_2x":1.02,"mira_4x":0.90,"awm":0.84,"olhadinha":1.06,"disparo":1.08},dpiOff:12},
+    {label:"Estável",   fatores:{"geral":0.94,"red_dot":0.96,"mira_2x":1.00,"mira_4x":1.02,"awm":1.04,"olhadinha":0.96,"disparo":0.94},dpiOff:-8},
+    {label:"Agressiva", fatores:{"geral":1.14,"red_dot":1.12,"mira_2x":1.00,"mira_4x":0.86,"awm":0.80,"olhadinha":1.10,"disparo":1.14},dpiOff:18},
+    {label:"Suave",     fatores:{"geral":0.88,"red_dot":0.90,"mira_2x":0.98,"mira_4x":1.06,"awm":1.10,"olhadinha":0.90,"disparo":0.88},dpiOff:-15},
+    {label:"Forte",     fatores:{"geral":1.06,"red_dot":1.08,"mira_2x":1.00,"mira_4x":0.94,"awm":0.90,"olhadinha":1.04,"disparo":1.08},dpiOff:8},
+    {label:"Dinâmica",  fatores:{"geral":1.08,"red_dot":1.06,"mira_2x":1.02,"mira_4x":0.92,"awm":0.86,"olhadinha":1.06,"disparo":1.10},dpiOff:14},
+    {label:"Leve",      fatores:{"geral":0.86,"red_dot":0.90,"mira_2x":0.96,"mira_4x":1.06,"awm":1.14,"olhadinha":0.90,"disparo":0.86},dpiOff:-16},
+    {label:"Turbo",     fatores:{"geral":1.16,"red_dot":1.14,"mira_2x":1.04,"mira_4x":0.84,"awm":0.76,"olhadinha":1.12,"disparo":1.16},dpiOff:22},
+    {label:"Flexível",  fatores:{"geral":1.00,"red_dot":1.02,"mira_2x":1.00,"mira_4x":1.00,"awm":0.96,"olhadinha":1.00,"disparo":1.02},dpiOff:2},
+    {label:"Direta",    fatores:{"geral":1.06,"red_dot":1.04,"mira_2x":0.98,"mira_4x":0.92,"awm":0.88,"olhadinha":1.04,"disparo":1.06},dpiOff:10},
+    {label:"Controle",  fatores:{"geral":0.92,"red_dot":0.94,"mira_2x":1.00,"mira_4x":1.06,"awm":1.10,"olhadinha":0.94,"disparo":0.92},dpiOff:-10},
+    {label:"Explosiva", fatores:{"geral":1.12,"red_dot":1.14,"mira_2x":1.02,"mira_4x":0.86,"awm":0.80,"olhadinha":1.10,"disparo":1.16},dpiOff:20},
+    {label:"Precisão",  fatores:{"geral":0.90,"red_dot":0.92,"mira_2x":0.96,"mira_4x":1.10,"awm":1.16,"olhadinha":0.92,"disparo":0.90},dpiOff:-14},
+    {label:"Rastreadora",fatores:{"geral":1.04,"red_dot":1.08,"mira_2x":1.02,"mira_4x":0.94,"awm":0.86,"olhadinha":1.06,"disparo":1.04},dpiOff:6},
+    {label:"Fluida",    fatores:{"geral":0.98,"red_dot":1.00,"mira_2x":1.00,"mira_4x":1.02,"awm":1.00,"olhadinha":0.98,"disparo":1.00},dpiOff:0},
+    {label:"Impacto",   fatores:{"geral":1.10,"red_dot":1.10,"mira_2x":1.00,"mira_4x":0.90,"awm":0.84,"olhadinha":1.08,"disparo":1.12},dpiOff:16},
+    {label:"Sutil",     fatores:{"geral":0.86,"red_dot":0.88,"mira_2x":0.94,"mira_4x":1.08,"awm":1.12,"olhadinha":0.88,"disparo":0.86},dpiOff:-18},
+    {label:"Máxima",    fatores:{"geral":1.18,"red_dot":1.16,"mira_2x":1.06,"mira_4x":0.82,"awm":0.74,"olhadinha":1.14,"disparo":1.18},dpiOff:25},
+    {label:"Pro Player",fatores:{"geral":1.02,"red_dot":1.04,"mira_2x":1.00,"mira_4x":0.98,"awm":0.92,"olhadinha":1.02,"disparo":1.06},dpiOff:4},
+  ];
+  return [...basePerfis, ...geradas];
+}
 
 const HUD = {
   2: ["HUD B\u00e1sico \u2013 2 Dedos","\u2022 Tiro: canto inferior direito","\u2022 Mira: canto superior esquerdo","\u2022 Joystick: canto inferior esquerdo","\u2022 Pular/Recarregar: lado direito","\u2022 Bot\u00f5es: Grande","\u2022 Transpar\u00eancia: 50%","\u2022 Layout: Padr\u00e3o"],
@@ -823,55 +861,63 @@ document.getElementById("brand").addEventListener("change", function() {
 
 // ─── Basic Calculation ─────────────────────────────────────────────
 function calcular(device, model, fps, fingers, style, profile) {
-  const isEmu = device === "Emulador";
+  const isEmu = device === "Emulador" || device === "FF_x86";
   const isMob = device === "Mobilador";
-  const isX86 = device === "FF_x86";
-  const devF = device === "Android" ? 1.0 : (device === "iPhone" ? 0.94 : (isMob ? 0.95 : (isX86 ? 0.90 : 0.92)));
+  const perfis = gerarPerfis(device);
+  const prf = perfis[profile] || perfis[0];
+  const devF = device === "Android" ? 1.0 : (device === "iPhone" ? 0.94 : (isMob ? 0.95 : (device === "FF_x86" ? 0.89 : 0.92)));
   const fpsF = {30:1.20,60:1.00,90:0.88,120:0.78}[parseInt(fps)];
   const finF = {2:1.15,3:1.00,4:0.88,5:0.78}[parseInt(fingers)];
   const styF = STYLE_F[style];
-  const prf = VARIANT_PROFILES[profile] || VARIANT_PROFILES[0];
   let seed = 0; for (let i=0; i<model.length; i++) seed += model.charCodeAt(i);
   seed = (seed % 7) - 3;
   const off = seed * 0.4;
+
   const out = {};
-  for (const [k] of SENS_KEYS) { out[k] = Math.max(1, Math.min(100, Math.round(BASE_SENS[k] * devF * fpsF * finF * styF[k] * prf.fatores[k] + off))); }
-  if (isX86) {
-    const dpiBase = 480; const dpiFps = {30:0.94,60:1.00,90:1.06,120:1.12}[parseInt(fps)];
-    const dpiFin = {2:1.02,3:1.00,4:0.96,5:0.92}[parseInt(fingers)];
-    const dpiSty = {Capa:1.06,Rush:1.04,Suporte:0.94,Misto:1.00}[style];
-    out.dpi = Math.max(320, Math.min(800, Math.round(dpiBase * dpiFps * dpiFin * dpiSty + seed * 5 + prf.dpiOff)));
-  } else if (isEmu) { out.dpi = Math.max(320, Math.min(640, Math.round(380 + seed * 5)));
+  for (const [k] of SENS_KEYS) {
+    out[k] = Math.max(1, Math.min(100, Math.round(BASE_SENS[k] * devF * fpsF * finF * styF[k] * prf.fatores[k] + off)));
+  }
+
+  // DPI
+  if (isEmu) {
+    out.dpi = Math.max(320, Math.min(640, Math.round(380 + seed * 5)));
   } else if (isMob) {
-    const dpiBase = 420; const dpiFps = {30:0.96,60:1.00,90:1.04,120:1.08}[parseInt(fps)];
+    const dpiBase = 420;
+    const dpiFps = {30:0.96,60:1.00,90:1.04,120:1.08}[parseInt(fps)];
     const dpiFin = {2:1.00,3:1.00,4:0.97,5:0.94}[parseInt(fingers)];
     const dpiSty = {Capa:1.06,Rush:1.04,Suporte:0.95,Misto:1.00}[style];
     out.dpi = Math.max(320, Math.min(700, Math.round(dpiBase * dpiFps * dpiFin * dpiSty + seed * 5 + prf.dpiOff)));
   } else {
-    const dpiBase = device === "iPhone" ? 460 : 400; const dpiFps = {30:0.96,60:1.00,90:1.04,120:1.08}[parseInt(fps)];
+    const dpiBase = device === "iPhone" ? 460 : 400;
+    const dpiFps = {30:0.96,60:1.00,90:1.04,120:1.08}[parseInt(fps)];
     const dpiFin = {2:1.00,3:1.00,4:0.97,5:0.94}[parseInt(fingers)];
     const dpiSty = {Capa:1.06,Rush:1.04,Suporte:0.95,Misto:1.00}[style];
     out.dpi = Math.max(320, Math.min(640, Math.round(dpiBase * dpiFps * dpiFin * dpiSty + seed * 5 + prf.dpiOff)));
   }
-  if (isX86) {
-    const fpsI = parseInt(fps); const fpsX86 = {30:0.90,60:1.00,90:1.08,120:1.14}[fpsI];
-    const finX86 = {2:1.12,3:1.00,4:0.90,5:0.82}[parseInt(fingers)];
-    const xf = FF_X86_SENSI_X[model] || 1.0; const yf = FF_X86_SENSI_Y[model] || 0.95;
-    out.sensi_x = Math.max(1, Math.min(100, Math.round(58 * fpsX86 * finX86 * styF.geral * xf * prf.fatores.geral + off)));
-    out.sensi_y = Math.max(1, Math.min(100, Math.round(48 * fpsX86 * finX86 * styF.geral * yf * prf.fatores.geral + off)));
-  } else if (isEmu) {
-    const fpsI = parseInt(fps); const fpsEmu = {30:0.92,60:1.00,90:1.06,120:1.10}[fpsI];
+
+  // Sensi X/Y
+  if (isEmu) {
+    const fpsI = parseInt(fps);
+    const fpsEmu = {30:0.92,60:1.00,90:1.06,120:1.10}[fpsI];
     const finEmu = {2:1.10,3:1.00,4:0.92,5:0.85}[parseInt(fingers)];
-    const xf = EMULATOR_SENSI_X[model] || 1.0; const yf = EMULATOR_SENSI_Y[model] || 0.95;
-    out.sensi_x = Math.max(1, Math.min(100, Math.round(55 * fpsEmu * finEmu * styF.geral * xf * prf.fatores.geral + off)));
-    out.sensi_y = Math.max(1, Math.min(100, Math.round(45 * fpsEmu * finEmu * styF.geral * yf * prf.fatores.geral + off)));
+    const sBase = device === "FF_x86" ? 52 : 55;
+    const xf = device === "FF_x86" ? (FF_X86_SENSI_X[model] || 1.0) : (EMULATOR_SENSI_X[model] || 1.0);
+    const yf = device === "FF_x86" ? (FF_X86_SENSI_Y[model] || 0.95) : (EMULATOR_SENSI_Y[model] || 0.95);
+    out.sensi_x = Math.max(1, Math.min(100, Math.round(sBase * fpsEmu * finEmu * styF.geral * xf * prf.fatores.geral + off)));
+    out.sensi_y = Math.max(1, Math.min(100, Math.round((sBase-10) * fpsEmu * finEmu * styF.geral * yf * prf.fatores.geral + off)));
   } else if (isMob) {
-    const fpsI = parseInt(fps); const fpsMob = {30:0.94,60:1.00,90:1.04,120:1.08}[fpsI];
+    const fpsI = parseInt(fps);
+    const fpsMob = {30:0.94,60:1.00,90:1.04,120:1.08}[fpsI];
     const finMob = {2:1.08,3:1.00,4:0.94,5:0.88}[parseInt(fingers)];
-    const xf = MOBILADOR_SENSI_X[model] || 0.98; const yf = MOBILADOR_SENSI_Y[model] || 0.93;
+    const xf = MOBILADOR_SENSI_X[model] || 0.98;
+    const yf = MOBILADOR_SENSI_Y[model] || 0.93;
     out.sensi_x = Math.max(1, Math.min(100, Math.round(50 * fpsMob * finMob * styF.geral * xf * prf.fatores.geral + off)));
     out.sensi_y = Math.max(1, Math.min(100, Math.round(42 * fpsMob * finMob * styF.geral * yf * prf.fatores.geral + off)));
-  } else { out.sensi_x = null; out.sensi_y = null; }
+  } else {
+    out.sensi_x = null;
+    out.sensi_y = null;
+  }
+
   return out;
 }
 
@@ -1069,10 +1115,8 @@ function gerar() {
     }
     for (const [k,dn] of SENS_KEYS) {
       const v = results[k];
-      const pct = Math.min(100, Math.max(0, v < 100 ? v : ((v - 320) / 3.2)));
       html += `<div class="sens-item"><span class="sens-label">${dn}</span><div class="sens-bar-wrap"><div class="sens-bar" style="width:${v < 200 ? v : ((v-320)/3.2)}%"></div></div><span class="sens-value">${v}</span></div>`;
     }
-    const dpiPct = Math.min(100, Math.max(0, results.dpi < 100 ? results.dpi : ((results.dpi - 320) / 3.2)));
     html += `<div class="sens-item"><span class="sens-label">DPI</span><div class="sens-bar-wrap"><div class="sens-bar dpi" style="width:${results.dpi < 200 ? results.dpi : ((results.dpi-320)/3.2)}%"></div></div><span class="sens-value">${results.dpi}</span></div>`;
     if (!isTema && (isEmu || isMob || isX86)) {
       if (results.sensi_x != null) {
@@ -1084,7 +1128,6 @@ function gerar() {
     }
     list.innerHTML = html;
 
-    // Confidence & Explanation
     const confArea = document.getElementById("confidence-area");
     const explArea = document.getElementById("explanation-area");
     const suggestDiv = document.getElementById("suggest-divider");
@@ -1122,7 +1165,6 @@ function gerar() {
       suggestArea.classList.add("hidden");
     }
 
-    // HUD
     const hudDiv = document.getElementById("hudText");
     if (isX86) {
       hudDiv.textContent = "HUD Free Fire x86 (Nativo PC)\n\n\u2022 WASD: movimenta\u00e7\u00e3o\n\u2022 Mouse: mira (Sensi X/Y)\n\u2022 Clique esquerdo: atirar\n\u2022 Clique direito: mirar\n\u2022 R: recarregar\n\u2022 Shift: correr\n\u2022 Espa\u00e7o: pular\n\u2022 1-5: trocar armas\n\u2022 B: mochila\n\u2022 M: mapa\n\u2022 Use o cliente nativo Free Fire x86";
@@ -1142,9 +1184,10 @@ function gerar() {
     return;
   }
 
-  // Basic mode - generate 6 variants
+  // Basic mode - generate profiles
+  const perfis = gerarPerfis(device);
   const allResults = [];
-  for (let i = 0; i < VARIANT_PROFILES.length; i++) {
+  for (let i = 0; i < perfis.length; i++) {
     allResults.push(calcular(device, model, fps, fingers, style, i));
   }
   currentResults = { device, model, fps, fingers, style, allResults, timestamp: now() };
@@ -1154,39 +1197,25 @@ function gerar() {
   const isMob = device === "Mobilador";
   const isX86 = device === "FF_x86";
 
-  let html = '<div class="sens-table-wrap"><table class="sens-table">';
-  html += '<tr><th>Sensi</th>';
+  let html = '<div class="sens-compact">';
   for (let i = 0; i < allResults.length; i++) {
-    html += `<th>${VARIANT_PROFILES[i].label}</th>`;
-  }
-  html += '</tr>';
-  for (const [k,dn] of SENS_KEYS) {
-    html += `<tr><td class="sens-td-label">${dn}</td>`;
-    for (const r of allResults) {
-      const cls = r[k] >= 60 ? 'high' : (r[k] <= 20 ? 'low' : '');
-      html += `<td class="sens-td-value ${cls}">${r[k]}</td>`;
+    const s = allResults[i];
+    const name = perfis[i].label;
+    html += '<div class="sens-crow">';
+    html += `<span class="sens-cname">${name}</span>`;
+    html += '<span class="sens-cvals">';
+    for (const [k] of SENS_KEYS) {
+      const cls = s[k] >= 60 ? 'high' : (s[k] <= 20 ? 'low' : '');
+      html += `<span class="sens-cv ${cls}">${s[k]}</span>`;
     }
-    html += '</tr>';
-  }
-  html += `<tr><td class="sens-td-label">DPI</td>`;
-  for (const r of allResults) {
-    const cls = r.dpi >= 500 ? 'high' : (r.dpi <= 360 ? 'low' : '');
-    html += `<td class="sens-td-value ${cls}">${r.dpi}</td>`;
-  }
-  html += '</tr>';
-  if (isEmu || isMob || isX86) {
-    html += `<tr><td class="sens-td-label">Sensi X</td>`;
-    for (const r of allResults) {
-      html += `<td class="sens-td-value">${r.sensi_x != null ? r.sensi_x : '-'}</td>`;
+    html += `<span class="sens-cv dpi">${s.dpi}</span>`;
+    if (isEmu || isMob || isX86) {
+      if (s.sensi_x != null) html += `<span class="sens-cv emu">${s.sensi_x}</span>`;
+      if (s.sensi_y != null) html += `<span class="sens-cv emu">${s.sensi_y}</span>`;
     }
-    html += '</tr>';
-    html += `<tr><td class="sens-td-label">Sensi Y</td>`;
-    for (const r of allResults) {
-      html += `<td class="sens-td-value">${r.sensi_y != null ? r.sensi_y : '-'}</td>`;
-    }
-    html += '</tr>';
+    html += '</span></div>';
   }
-  html += '</table></div>';
+  html += '</div>';
   list.innerHTML = html;
 
   document.getElementById("confidence-area").classList.add("hidden");
@@ -1209,7 +1238,7 @@ function gerar() {
 
   document.getElementById("resultsCard").classList.remove("hidden");
   salvarHistorico(currentResults);
-  toast("6 op\u00e7\u00f5es geradas!");
+  toast(perfis.length + " perfis gerados!");
 }
 
 // ─── Copiar ────────────────────────────────────────────────────────
@@ -1229,7 +1258,7 @@ function copiar() {
     ];
     for (let i = 0; i < r.allResults.length; i++) {
       const s = r.allResults[i];
-      const name = VARIANT_PROFILES[i].label;
+      const name = gerarPerfis(r.device)[i].label;
       lines.push(`\u2500 ${name} \u2500`.padEnd(40, "\u2500"));
       for (const [k,dn] of SENS_KEYS) lines.push(`  ${dn.padEnd(12)}: ${s[k].toString().padStart(3)}`);
       lines.push(`  ${"DPI".padEnd(12)}: ${s.dpi.toString().padStart(3)}`);
@@ -1327,7 +1356,7 @@ function exportar() {
   if (r.allResults) {
     for (let i = 0; i < r.allResults.length; i++) {
       const s = r.allResults[i];
-      const name = VARIANT_PROFILES[i].label;
+      const name = gerarPerfis(r.device)[i].label;
       lines.push("\u2500".repeat(48));
       lines.push(`  >>> ${name} <<<`);
       lines.push("\u2500".repeat(48));
